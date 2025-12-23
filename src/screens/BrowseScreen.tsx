@@ -152,6 +152,8 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
           />
         )}
         contentContainerStyle={styles.listContent}
+        refreshing={loading}
+        onRefresh={loadData}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No programs found</Text>
