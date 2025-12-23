@@ -34,19 +34,6 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
     loadFavorites();
   }, []);
 
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      if (searchQuery.trim().length >= 2) {
-        handleSearch();
-      } else {
-        setPrograms([]);
-        setSearched(false);
-      }
-    }, 500); // Debounce search for 500ms
-
-    return () => clearTimeout(debounceTimer);
-  }, [searchQuery, handleSearch]);
-
   const loadFavorites = async () => {
     try {
       const favs = await APIService.getFavorites();
@@ -56,15 +43,14 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
     }
   };
 
-  const handleSearch = useCallback(async () => {
-    const q = searchQuery.trim();
-    if (q.length < 2) return;
+  const performSearch = useCallback(async (query: string) => {
+    if (query.length < 2) return;
 
     const requestId = ++requestIdRef.current;
 
     try {
       setLoading(true);
-      const results = await APIService.searchPrograms(q);
+      const results = await APIService.searchPrograms(query);
 
       // Only apply if this is still the latest request
       if (requestId === requestIdRef.current) {
@@ -78,7 +64,25 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
         setLoading(false);
       }
     }
-  }, [searchQuery, handleSearch]);
+  }, []);
+
+  useEffect(() => {
+    const query = searchQuery.trim();
+    const debounceTimer = setTimeout(() => {
+      if (query.length >= 2) {
+        performSearch(query);
+      } else {
+        setPrograms([]);
+        setSearched(false);
+      }
+    }, 500); // Debounce search for 500ms
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, performSearch]);
+
+  const handleSearch = useCallback(() => {
+    performSearch(searchQuery.trim());
+  }, [searchQuery, performSearch]);
 
 
   const handleToggleFavorite = async (programId: string) => {

@@ -10,7 +10,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Share,
+  Platform,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { BrowseStackParamList } from '../navigation/AppNavigator';
 import { Program } from '../types';
@@ -92,6 +95,28 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
     await openExternalUrl(`mailto:${program.email}`, 'Cannot open email');
   };
 
+  const handleShare = async () => {
+    if (!program) return;
+
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      const shareMessage = `Check out ${program.name} on Bay Area Discounts!\n\n${program.description}\n\nLearn more: ${program.website || 'https://bayareadiscounts.com'}`;
+
+      const result = await Share.share({
+        message: shareMessage,
+        title: program.name,
+        ...(Platform.OS === 'ios' && program.website ? { url: program.website } : {}),
+      });
+
+      if (result.action === Share.sharedAction) {
+        console.log('Shared successfully');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Failed to share program');
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner message="Loading program..." />;
   }
@@ -109,14 +134,24 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
           <Text style={styles.icon}>{categoryIcon}</Text>
           <Text style={styles.title}>{program.name}</Text>
         </View>
-        <TouchableOpacity
-          onPress={handleToggleFavorite}
-          style={styles.favoriteButton}
-          accessibilityRole="button"
-          accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-        >
-          <Text style={styles.favoriteIcon}>{isFavorite ? '⭐' : '☆'}</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={handleShare}
+            style={styles.actionButton}
+            accessibilityRole="button"
+            accessibilityLabel="Share program"
+          >
+            <Text style={styles.actionIcon}>📤</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleToggleFavorite}
+            style={styles.actionButton}
+            accessibilityRole="button"
+            accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            <Text style={styles.actionIcon}>{isFavorite ? '⭐' : '☆'}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.section}>
@@ -223,11 +258,16 @@ const styles = StyleSheet.create({
     color: '#111827',
     flex: 1,
   },
-  favoriteButton: {
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  actionButton: {
     padding: 8,
   },
-  favoriteIcon: {
-    fontSize: 32,
+  actionIcon: {
+    fontSize: 28,
   },
   section: {
     marginBottom: 24,

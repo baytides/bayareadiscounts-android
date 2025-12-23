@@ -86,7 +86,7 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleOpenWebsite = async () => {
+  const handleOpenBayTides = async () => {
     const url = 'https://baytides.org';
     try {
       await Linking.openURL(url);
@@ -165,6 +165,17 @@ export default function SettingsScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.buttonIcon}>🌐</Text>
                 <Text style={styles.buttonText}>Visit Website</Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+            <View style={styles.divider} />
+            <TouchableOpacity
+              style={styles.rowButton}
+              onPress={handleOpenBayTides}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.buttonIcon}>🌊</Text>
+                <Text style={styles.buttonText}>Bay Tides (Parent Org)</Text>
               </View>
               <Text style={styles.chevron}>›</Text>
             </TouchableOpacity>
