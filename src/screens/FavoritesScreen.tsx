@@ -77,6 +77,8 @@ export default function FavoritesScreen({ navigation }: FavoritesScreenProps) {
           />
         )}
         contentContainerStyle={styles.listContent}
+        refreshing={loading}
+        onRefresh={loadFavorites}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>⭐</Text>

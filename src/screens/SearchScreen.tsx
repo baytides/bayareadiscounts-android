@@ -139,6 +139,8 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
             />
           )}
           contentContainerStyle={styles.listContent}
+          refreshing={loading}
+          onRefresh={handleSearch}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>🔍</Text>

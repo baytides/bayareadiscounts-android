@@ -5,6 +5,7 @@
 
 import React, { memo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Program } from '../types';
 
 interface ProgramCardProps {
@@ -51,7 +52,10 @@ function ProgramCard({
         </View>
         {onToggleFavorite && (
           <TouchableOpacity
-            onPress={onToggleFavorite}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onToggleFavorite();
+            }}
             style={styles.favoriteButton}
             accessibilityRole="button"
             accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
