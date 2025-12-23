@@ -14,7 +14,7 @@ import {
   APIMetadata,
 } from '../types';
 
-const API_BASE_URL = 'https://blue-pebble-00a40d41e.4.azurestaticapps.net/api';
+const API_BASE_URL = 'https://bayareadiscounts.com/api';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 const CACHE_KEYS = {
   PROGRAMS: '@bay_area_discounts:programs',
