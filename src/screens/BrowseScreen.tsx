@@ -26,11 +26,15 @@ type BrowseScreenProps = {
   navigation: NativeStackNavigationProp<BrowseStackParamList, 'BrowseList'>;
 };
 
-type SortOption = 'a-z' | 'z-a' | 'recently-verified';
+type SortOption = 'name-asc' | 'name-desc' | 'area-asc' | 'area-desc' | 'category-asc' | 'category-desc' | 'recently-verified';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: 'a-z', label: 'A-Z' },
-  { value: 'z-a', label: 'Z-A' },
+  { value: 'name-asc', label: 'Name (A-Z)' },
+  { value: 'name-desc', label: 'Name (Z-A)' },
+  { value: 'area-asc', label: 'Area (A-Z)' },
+  { value: 'area-desc', label: 'Area (Z-A)' },
+  { value: 'category-asc', label: 'Category (A-Z)' },
+  { value: 'category-desc', label: 'Category (Z-A)' },
   { value: 'recently-verified', label: 'Recently Verified' },
 ];
 
@@ -74,7 +78,7 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [selectedEligibility, setSelectedEligibility] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<SortOption>('a-z');
+  const [sortBy, setSortBy] = useState<SortOption>('name-asc');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -142,11 +146,39 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
     // Apply sorting
     const sorted = [...filtered];
     switch (sortBy) {
-      case 'a-z':
+      case 'name-asc':
         sorted.sort((a, b) => a.name.localeCompare(b.name));
         break;
-      case 'z-a':
+      case 'name-desc':
         sorted.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'area-asc':
+        sorted.sort((a, b) => {
+          const aArea = a.city || a.areas[0] || '';
+          const bArea = b.city || b.areas[0] || '';
+          return aArea.localeCompare(bArea);
+        });
+        break;
+      case 'area-desc':
+        sorted.sort((a, b) => {
+          const aArea = a.city || a.areas[0] || '';
+          const bArea = b.city || b.areas[0] || '';
+          return bArea.localeCompare(aArea);
+        });
+        break;
+      case 'category-asc':
+        sorted.sort((a, b) => {
+          const aName = CATEGORY_CONFIG[a.category]?.name || a.category;
+          const bName = CATEGORY_CONFIG[b.category]?.name || b.category;
+          return aName.localeCompare(bName);
+        });
+        break;
+      case 'category-desc':
+        sorted.sort((a, b) => {
+          const aName = CATEGORY_CONFIG[a.category]?.name || a.category;
+          const bName = CATEGORY_CONFIG[b.category]?.name || b.category;
+          return bName.localeCompare(aName);
+        });
         break;
       case 'recently-verified':
         sorted.sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime());
@@ -203,7 +235,7 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
   };
 
   const getSortLabel = (): string => {
-    return SORT_OPTIONS.find(o => o.value === sortBy)?.label || 'A-Z';
+    return SORT_OPTIONS.find(o => o.value === sortBy)?.label || 'Name (A-Z)';
   };
 
   const renderEligibilityFilter = () => (
