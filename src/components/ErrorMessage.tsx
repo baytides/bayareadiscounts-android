@@ -12,16 +12,19 @@ interface ErrorMessageProps {
 
 export default function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.icon}>⚠️</Text>
-      <Text style={styles.message}>{message}</Text>
+    <View style={styles.container} accessibilityRole="alert" accessibilityLiveRegion="polite">
+      <Text style={styles.icon} accessible={false}>⚠️</Text>
+      <Text style={styles.message} allowFontScaling={true} maxFontSizeMultiplier={1.5}>{message}</Text>
       {onRetry && (
         <TouchableOpacity
           style={styles.button}
           onPress={onRetry}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Retry loading"
+          accessibilityHint="Double-tap to try loading the content again"
         >
-          <Text style={styles.buttonText}>Retry</Text>
+          <Text style={styles.buttonText} allowFontScaling={true}>Retry</Text>
         </TouchableOpacity>
       )}
     </View>

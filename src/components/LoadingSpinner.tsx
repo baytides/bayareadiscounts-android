@@ -11,9 +11,9 @@ interface LoadingSpinnerProps {
 
 export default function LoadingSpinner({ message = 'Loading...' }: LoadingSpinnerProps) {
   return (
-    <View style={styles.container}>
-      <ActivityIndicator size="large" color="#2563eb" />
-      {message && <Text style={styles.message}>{message}</Text>}
+    <View style={styles.container} accessible={true} accessibilityRole="progressbar" accessibilityLabel={message} accessibilityLiveRegion="polite">
+      <ActivityIndicator size="large" color="#2563eb" accessibilityElementsHidden={true} />
+      {message && <Text style={styles.message} allowFontScaling={true} maxFontSizeMultiplier={1.5}>{message}</Text>}
     </View>
   );
 }

@@ -4,10 +4,18 @@
  */
 
 import React, { memo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, AccessibilityInfo } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Program } from '../types';
 import { useTheme } from '../context/ThemeContext';
+
+// Helper to safely trigger haptics (respects reduce motion)
+const triggerHaptic = async () => {
+  const isReduceMotionEnabled = await AccessibilityInfo.isReduceMotionEnabled();
+  if (!isReduceMotionEnabled) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+};
 
 interface ProgramCardProps {
   program: Program;
@@ -53,30 +61,34 @@ function ProgramCard({
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`${program.name}. ${program.description}`}
+      accessibilityHint="Double-tap to view full program details"
     >
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <Text style={styles.icon}>{categoryIcon}</Text>
-          <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
+          <Text style={styles.icon} accessible={false}>{categoryIcon}</Text>
+          <Text style={[styles.title, { color: colors.text }]} numberOfLines={2} allowFontScaling={true} maxFontSizeMultiplier={1.5}>
             {program.name}
           </Text>
         </View>
         {onToggleFavorite && (
           <TouchableOpacity
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              triggerHaptic();
               onToggleFavorite();
             }}
             style={styles.favoriteButton}
             accessibilityRole="button"
             accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            accessibilityState={{ checked: isFavorite }}
+            accessibilityHint={isFavorite ? 'Double-tap to remove this program from your saved list' : 'Double-tap to save this program'}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={styles.favoriteIcon}>{isFavorite ? '⭐' : '☆'}</Text>
+            <Text style={styles.favoriteIcon} accessible={false}>{isFavorite ? '⭐' : '☆'}</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={3}>
+      <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={3} allowFontScaling={true} maxFontSizeMultiplier={1.5}>
         {program.description}
       </Text>
 
@@ -143,7 +155,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   favoriteButton: {
-    padding: 4,
+    padding: 8,
+    minWidth: 48,
+    minHeight: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   favoriteIcon: {
     fontSize: 24,
