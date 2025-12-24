@@ -23,6 +23,8 @@ const CACHE_KEYS = {
   AREAS: '@bay_area_discounts:areas',
   METADATA: '@bay_area_discounts:metadata',
   FAVORITES: '@bay_area_discounts:favorites',
+  RECENT_SEARCHES: '@bay_area_discounts:recent_searches',
+  FILTER_PRESETS: '@bay_area_discounts:filter_presets',
 };
 
 interface CachedData<T> {
@@ -309,6 +311,131 @@ class APIService {
       return 0;
     }
   }
+
+  // ============================================
+  // RECENT SEARCHES
+  // ============================================
+
+  private readonly MAX_RECENT_SEARCHES = 5;
+
+  /**
+   * Get recent searches
+   */
+  async getRecentSearches(): Promise<string[]> {
+    try {
+      const searches = await AsyncStorage.getItem(CACHE_KEYS.RECENT_SEARCHES);
+      return searches ? JSON.parse(searches) : [];
+    } catch (error) {
+      console.error('Error reading recent searches:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Add a search to recent searches
+   */
+  async addRecentSearch(query: string): Promise<void> {
+    if (!query || query.length < 2) return;
+
+    try {
+      let searches = await this.getRecentSearches();
+      // Remove if already exists (case-insensitive)
+      searches = searches.filter(s => s.toLowerCase() !== query.toLowerCase());
+      // Add to front
+      searches.unshift(query);
+      // Keep only MAX_RECENT_SEARCHES
+      searches = searches.slice(0, this.MAX_RECENT_SEARCHES);
+      await AsyncStorage.setItem(CACHE_KEYS.RECENT_SEARCHES, JSON.stringify(searches));
+    } catch (error) {
+      console.error('Error saving recent search:', error);
+    }
+  }
+
+  /**
+   * Clear recent searches
+   */
+  async clearRecentSearches(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(CACHE_KEYS.RECENT_SEARCHES);
+    } catch (error) {
+      console.error('Error clearing recent searches:', error);
+    }
+  }
+
+  // ============================================
+  // FILTER PRESETS
+  // ============================================
+
+  private readonly MAX_PRESETS = 10;
+
+  /**
+   * Get all filter presets
+   */
+  async getFilterPresets(): Promise<FilterPreset[]> {
+    try {
+      const presets = await AsyncStorage.getItem(CACHE_KEYS.FILTER_PRESETS);
+      return presets ? JSON.parse(presets) : [];
+    } catch (error) {
+      console.error('Error reading filter presets:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Save a new filter preset
+   */
+  async saveFilterPreset(name: string, filters: FilterPreset['filters']): Promise<FilterPreset | null> {
+    if (!name || !name.trim()) return null;
+
+    try {
+      let presets = await this.getFilterPresets();
+
+      if (presets.length >= this.MAX_PRESETS) {
+        console.warn('Maximum presets reached');
+        return null;
+      }
+
+      const preset: FilterPreset = {
+        id: Date.now().toString(),
+        name: name.trim(),
+        filters,
+        createdAt: new Date().toISOString(),
+      };
+
+      presets.unshift(preset);
+      await AsyncStorage.setItem(CACHE_KEYS.FILTER_PRESETS, JSON.stringify(presets));
+      return preset;
+    } catch (error) {
+      console.error('Error saving filter preset:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Delete a filter preset
+   */
+  async deleteFilterPreset(id: string): Promise<void> {
+    try {
+      let presets = await this.getFilterPresets();
+      presets = presets.filter(p => p.id !== id);
+      await AsyncStorage.setItem(CACHE_KEYS.FILTER_PRESETS, JSON.stringify(presets));
+    } catch (error) {
+      console.error('Error deleting filter preset:', error);
+    }
+  }
+}
+
+// Type for filter presets (exported for use in components)
+export interface FilterPreset {
+  id: string;
+  name: string;
+  filters: {
+    categories: string[];
+    eligibility: string[];
+    areas: string[];
+    searchQuery: string;
+  };
+  createdAt: string;
 }
 
 export default new APIService();

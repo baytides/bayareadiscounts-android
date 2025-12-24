@@ -10,8 +10,10 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { SearchStackParamList } from '../navigation/AppNavigator';
 import { Program } from '../types';
 import APIService from '../services/api';
@@ -26,13 +28,31 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [programs, setPrograms] = useState<Program[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const requestIdRef = useRef(0);
 
   useEffect(() => {
     loadFavorites();
+    loadRecentSearches();
   }, []);
+
+  // Reload recent searches when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadRecentSearches();
+    }, [])
+  );
+
+  const loadRecentSearches = async () => {
+    try {
+      const searches = await APIService.getRecentSearches();
+      setRecentSearches(searches);
+    } catch (err) {
+      console.error('Load recent searches error:', err);
+    }
+  };
 
   const loadFavorites = async () => {
     try {
@@ -43,7 +63,7 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
     }
   };
 
-  const performSearch = useCallback(async (query: string) => {
+  const performSearch = useCallback(async (query: string, saveToRecent: boolean = true) => {
     if (query.length < 2) return;
 
     const requestId = ++requestIdRef.current;
@@ -56,6 +76,12 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
       if (requestId === requestIdRef.current) {
         setPrograms(results);
         setSearched(true);
+
+        // Save to recent searches if we got results
+        if (saveToRecent && results.length > 0) {
+          await APIService.addRecentSearch(query);
+          loadRecentSearches();
+        }
       }
     } catch (err) {
       console.error('Search error:', err);
@@ -103,6 +129,53 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
     setSearchQuery('');
     setPrograms([]);
     setSearched(false);
+  };
+
+  const handleRecentSearchPress = (query: string) => {
+    setSearchQuery(query);
+    performSearch(query, false); // Don't save again since it's already in recent
+  };
+
+  const handleClearRecentSearches = async () => {
+    await APIService.clearRecentSearches();
+    setRecentSearches([]);
+  };
+
+  const renderRecentSearches = () => {
+    if (recentSearches.length === 0) return null;
+
+    return (
+      <View style={styles.recentSearchesContainer}>
+        <View style={styles.recentSearchesHeader}>
+          <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
+          <TouchableOpacity
+            onPress={handleClearRecentSearches}
+            accessibilityLabel="Clear recent searches"
+            accessibilityRole="button"
+          >
+            <Text style={styles.clearRecentText}>Clear</Text>
+          </TouchableOpacity>
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.recentSearchesList}
+        >
+          {recentSearches.map((search, index) => (
+            <TouchableOpacity
+              key={`${search}-${index}`}
+              style={styles.recentSearchChip}
+              onPress={() => handleRecentSearchPress(search)}
+              accessibilityLabel={`Search for ${search}`}
+              accessibilityRole="button"
+            >
+              <Text style={styles.recentSearchChipIcon}>🕐</Text>
+              <Text style={styles.recentSearchChipText}>{search}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    );
   };
 
   return (
@@ -154,12 +227,15 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
           }
         />
       ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyIcon}>🔍</Text>
-          <Text style={styles.emptyText}>Search for programs</Text>
-          <Text style={styles.emptySubtext}>
-            Enter at least 2 characters to search
-          </Text>
+        <View style={styles.emptyStateContainer}>
+          {renderRecentSearches()}
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyIcon}>🔍</Text>
+            <Text style={styles.emptyText}>Search for programs</Text>
+            <Text style={styles.emptySubtext}>
+              Enter at least 2 characters to search
+            </Text>
+          </View>
         </View>
       )}
     </View>
@@ -204,6 +280,9 @@ const styles = StyleSheet.create({
   listContent: {
     paddingVertical: 8,
   },
+  emptyStateContainer: {
+    flex: 1,
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -224,5 +303,50 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
+  },
+  // Recent Searches styles
+  recentSearchesContainer: {
+    backgroundColor: '#ffffff',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  recentSearchesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  recentSearchesTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  clearRecentText: {
+    fontSize: 14,
+    color: '#2563eb',
+    fontWeight: '500',
+  },
+  recentSearchesList: {
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  recentSearchChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginHorizontal: 4,
+  },
+  recentSearchChipIcon: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  recentSearchChipText: {
+    fontSize: 14,
+    color: '#374151',
   },
 });

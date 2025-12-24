@@ -104,6 +104,55 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleSendFeedback = () => {
+    Alert.alert(
+      'Send Feedback',
+      'How would you like to send feedback?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Bug Report',
+          onPress: () => openFeedbackUrl('bug'),
+        },
+        {
+          text: 'Feature Request',
+          onPress: () => openFeedbackUrl('feature'),
+        },
+        {
+          text: 'General Feedback',
+          onPress: () => openFeedbackUrl('general'),
+        },
+      ]
+    );
+  };
+
+  const openFeedbackUrl = async (type: 'bug' | 'feature' | 'general') => {
+    const labels: Record<string, string> = {
+      bug: 'bug',
+      feature: 'enhancement',
+      general: 'feedback',
+    };
+    const titles: Record<string, string> = {
+      bug: '[Bug] ',
+      feature: '[Feature Request] ',
+      general: '[Feedback] ',
+    };
+
+    const params = new URLSearchParams({
+      labels: labels[type],
+      title: titles[type],
+      body: `\n\n---\n**Platform:** Android\n**App Version:** ${version}\n**Submitted via:** Mobile App`,
+    });
+
+    const url = `https://github.com/baytides/bayareadiscounts/issues/new?${params.toString()}`;
+
+    try {
+      await Linking.openURL(url);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to open feedback form');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -156,11 +205,44 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Feedback</Text>
+          <View style={styles.card}>
+            <TouchableOpacity
+              style={styles.rowButton}
+              onPress={handleSendFeedback}
+              accessibilityLabel="Send feedback"
+              accessibilityRole="button"
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.buttonIcon}>💬</Text>
+                <Text style={styles.buttonText}>Send Feedback</Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+            <View style={styles.divider} />
+            <TouchableOpacity
+              style={styles.rowButton}
+              onPress={handleReportIssue}
+              accessibilityLabel="Report a bug or issue"
+              accessibilityRole="button"
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.buttonIcon}>🐛</Text>
+                <Text style={styles.buttonText}>Report an Issue</Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Support</Text>
           <View style={styles.card}>
             <TouchableOpacity
               style={styles.rowButton}
               onPress={handleOpenWebsite}
+              accessibilityLabel="Visit Bay Area Discounts website"
+              accessibilityRole="link"
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.buttonIcon}>🌐</Text>
@@ -172,21 +254,12 @@ export default function SettingsScreen() {
             <TouchableOpacity
               style={styles.rowButton}
               onPress={handleOpenBayTides}
+              accessibilityLabel="Visit Bay Tides parent organization website"
+              accessibilityRole="link"
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.buttonIcon}>🌊</Text>
                 <Text style={styles.buttonText}>Bay Tides (Parent Org)</Text>
-              </View>
-              <Text style={styles.chevron}>›</Text>
-            </TouchableOpacity>
-            <View style={styles.divider} />
-            <TouchableOpacity
-              style={styles.rowButton}
-              onPress={handleReportIssue}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={styles.buttonIcon}>🐛</Text>
-                <Text style={styles.buttonText}>Report an Issue</Text>
               </View>
               <Text style={styles.chevron}>›</Text>
             </TouchableOpacity>
