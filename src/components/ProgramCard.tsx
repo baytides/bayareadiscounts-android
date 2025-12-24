@@ -7,6 +7,7 @@ import React, { memo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Program } from '../types';
+import { useTheme } from '../context/ThemeContext';
 
 interface ProgramCardProps {
   program: Program;
@@ -32,12 +33,13 @@ function ProgramCard({
   isFavorite = false,
   onToggleFavorite,
 }: ProgramCardProps) {
+  const { colors, isDark } = useTheme();
   const categoryIcon = CATEGORY_ICONS[program.category] || '📋';
   const areaText = program.areas.join(', ');
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, { backgroundColor: colors.cardBackground }]}
       onPress={onPress}
       activeOpacity={0.7}
       accessibilityRole="button"
@@ -46,7 +48,7 @@ function ProgramCard({
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <Text style={styles.icon}>{categoryIcon}</Text>
-          <Text style={styles.title} numberOfLines={2}>
+          <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
             {program.name}
           </Text>
         </View>
@@ -65,21 +67,21 @@ function ProgramCard({
         )}
       </View>
 
-      <Text style={styles.description} numberOfLines={3}>
+      <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={3}>
         {program.description}
       </Text>
 
       {program.eligibility.length > 0 && (
         <View style={styles.eligibilityContainer}>
-          <Text style={styles.label}>Eligibility:</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Eligibility:</Text>
           <View style={styles.tags}>
             {program.eligibility.slice(0, 2).map((tag) => (
-              <View key={tag} style={styles.tag}>
-                <Text style={styles.tagText}>{tag}</Text>
+              <View key={tag} style={[styles.tag, { backgroundColor: isDark ? '#1e3a5f' : '#dbeafe' }]}>
+                <Text style={[styles.tagText, { color: isDark ? '#93c5fd' : '#1e40af' }]}>{tag}</Text>
               </View>
             ))}
             {program.eligibility.length > 2 && (
-              <Text style={styles.moreText}>+{program.eligibility.length - 2} more</Text>
+              <Text style={[styles.moreText, { color: colors.textSecondary }]}>+{program.eligibility.length - 2} more</Text>
             )}
           </View>
         </View>
@@ -88,7 +90,7 @@ function ProgramCard({
       {areaText && (
         <View style={styles.areaContainer}>
           <Text style={styles.areaIcon}>📍</Text>
-          <Text style={styles.areaText} numberOfLines={1}>
+          <Text style={[styles.areaText, { color: colors.textSecondary }]} numberOfLines={1}>
             {areaText}
           </Text>
         </View>

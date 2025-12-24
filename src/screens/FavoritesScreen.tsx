@@ -11,12 +11,14 @@ import { Program } from '../types';
 import APIService from '../services/api';
 import ProgramCard from '../components/ProgramCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useTheme } from '../context/ThemeContext';
 
 type FavoritesScreenProps = {
   navigation: NativeStackNavigationProp<FavoritesStackParamList, 'FavoritesList'>;
 };
 
 export default function FavoritesScreen({ navigation }: FavoritesScreenProps) {
+  const { colors } = useTheme();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +66,7 @@ export default function FavoritesScreen({ navigation }: FavoritesScreenProps) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={programs}
         keyExtractor={item => item.id}
@@ -82,8 +84,8 @@ export default function FavoritesScreen({ navigation }: FavoritesScreenProps) {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>⭐</Text>
-            <Text style={styles.emptyText}>No saved programs yet</Text>
-            <Text style={styles.emptySubtext}>
+            <Text style={[styles.emptyText, { color: colors.text }]}>No saved programs yet</Text>
+            <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
               Tap the star icon on any program to save it here
             </Text>
           </View>

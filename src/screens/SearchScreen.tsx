@@ -19,12 +19,14 @@ import { Program } from '../types';
 import APIService from '../services/api';
 import ProgramCard from '../components/ProgramCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useTheme } from '../context/ThemeContext';
 
 type SearchScreenProps = {
   navigation: NativeStackNavigationProp<SearchStackParamList, 'SearchList'>;
 };
 
 export default function SearchScreen({ navigation }: SearchScreenProps) {
+  const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [programs, setPrograms] = useState<Program[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -145,15 +147,15 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
     if (recentSearches.length === 0) return null;
 
     return (
-      <View style={styles.recentSearchesContainer}>
+      <View style={[styles.recentSearchesContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <View style={styles.recentSearchesHeader}>
-          <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
+          <Text style={[styles.recentSearchesTitle, { color: colors.text }]}>Recent Searches</Text>
           <TouchableOpacity
             onPress={handleClearRecentSearches}
             accessibilityLabel="Clear recent searches"
             accessibilityRole="button"
           >
-            <Text style={styles.clearRecentText}>Clear</Text>
+            <Text style={[styles.clearRecentText, { color: colors.primary }]}>Clear</Text>
           </TouchableOpacity>
         </View>
         <ScrollView
@@ -164,13 +166,13 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
           {recentSearches.map((search, index) => (
             <TouchableOpacity
               key={`${search}-${index}`}
-              style={styles.recentSearchChip}
+              style={[styles.recentSearchChip, { backgroundColor: colors.inputBackground }]}
               onPress={() => handleRecentSearchPress(search)}
               accessibilityLabel={`Search for ${search}`}
               accessibilityRole="button"
             >
               <Text style={styles.recentSearchChipIcon}>🕐</Text>
-              <Text style={styles.recentSearchChipText}>{search}</Text>
+              <Text style={[styles.recentSearchChipText, { color: colors.text }]}>{search}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -179,13 +181,14 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <View style={[styles.searchInputContainer, { backgroundColor: colors.inputBackground }]}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search programs..."
+            placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
             autoCapitalize="none"
@@ -195,7 +198,7 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
-              <Text style={styles.clearIcon}>✕</Text>
+              <Text style={[styles.clearIcon, { color: colors.textSecondary }]}>✕</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -221,8 +224,8 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>🔍</Text>
-              <Text style={styles.emptyText}>No programs found</Text>
-              <Text style={styles.emptySubtext}>Try different keywords</Text>
+              <Text style={[styles.emptyText, { color: colors.text }]}>No programs found</Text>
+              <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>Try different keywords</Text>
             </View>
           }
         />
@@ -231,8 +234,8 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
           {renderRecentSearches()}
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>🔍</Text>
-            <Text style={styles.emptyText}>Search for programs</Text>
-            <Text style={styles.emptySubtext}>
+            <Text style={[styles.emptyText, { color: colors.text }]}>Search for programs</Text>
+            <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
               Enter at least 2 characters to search
             </Text>
           </View>

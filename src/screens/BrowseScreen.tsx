@@ -121,6 +121,19 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.filterScroll}
       >
+        <TouchableOpacity
+          style={[
+            styles.filterChip,
+            { backgroundColor: colors.inputBackground },
+            selectedEligibility.length === 0 && styles.filterChipActive,
+          ]}
+          onPress={() => setSelectedEligibility([])}
+        >
+          <Text style={[styles.filterText, { color: colors.text }, selectedEligibility.length === 0 && styles.filterTextActive]}>
+            All
+          </Text>
+        </TouchableOpacity>
+
         {eligibilityTypes.map(eligibility => (
           <TouchableOpacity
             key={eligibility.id}
