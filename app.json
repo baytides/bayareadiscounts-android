@@ -19,7 +19,7 @@
       "package": "org.baytides.bayareadiscounts",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/favicons/web-app-manifest-512x512.png",
+        "foregroundImage": "./assets/images/favicons/adaptive-icon-foreground.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
