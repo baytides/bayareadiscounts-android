@@ -5,9 +5,10 @@
 
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useTheme } from '../context/ThemeContext';
 
 // Screens
 import BrowseScreen from '../screens/BrowseScreen';
@@ -39,17 +40,29 @@ export type FavoritesStackParamList = {
   ProgramDetail: { programId: string };
 };
 
+export type SettingsStackParamList = {
+  SettingsList: undefined;
+};
+
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const BrowseStack = createNativeStackNavigator<BrowseStackParamList>();
 const SearchStack = createNativeStackNavigator<SearchStackParamList>();
 const FavoritesStack = createNativeStackNavigator<FavoritesStackParamList>();
+const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 
 /**
  * Browse Stack Navigator
  */
 function BrowseStackNavigator() {
+  const { colors } = useTheme();
   return (
-    <BrowseStack.Navigator>
+    <BrowseStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.text,
+        headerTitleStyle: { color: colors.text },
+      }}
+    >
       <BrowseStack.Screen
         name="BrowseList"
         component={BrowseScreen}
@@ -68,8 +81,15 @@ function BrowseStackNavigator() {
  * Search Stack Navigator
  */
 function SearchStackNavigator() {
+  const { colors } = useTheme();
   return (
-    <SearchStack.Navigator>
+    <SearchStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.text,
+        headerTitleStyle: { color: colors.text },
+      }}
+    >
       <SearchStack.Screen
         name="SearchList"
         component={SearchScreen}
@@ -88,8 +108,15 @@ function SearchStackNavigator() {
  * Favorites Stack Navigator
  */
 function FavoritesStackNavigator() {
+  const { colors } = useTheme();
   return (
-    <FavoritesStack.Navigator>
+    <FavoritesStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.text,
+        headerTitleStyle: { color: colors.text },
+      }}
+    >
       <FavoritesStack.Screen
         name="FavoritesList"
         component={FavoritesScreen}
@@ -105,15 +132,64 @@ function FavoritesStackNavigator() {
 }
 
 /**
+ * Settings Stack Navigator
+ */
+function SettingsStackNavigator() {
+  const { colors } = useTheme();
+  return (
+    <SettingsStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.text,
+        headerTitleStyle: { color: colors.text },
+      }}
+    >
+      <SettingsStack.Screen
+        name="SettingsList"
+        component={SettingsScreen}
+        options={{ title: 'Settings' }}
+      />
+    </SettingsStack.Navigator>
+  );
+}
+
+/**
  * Main App Navigator
  */
 export default function AppNavigator() {
+  const { colors, isDark } = useTheme();
+
+  const navigationTheme = isDark
+    ? {
+        ...DarkTheme,
+        colors: {
+          ...DarkTheme.colors,
+          background: colors.background,
+          card: colors.surface,
+          text: colors.text,
+          border: colors.border,
+          primary: colors.primary,
+        },
+      }
+    : {
+        ...DefaultTheme,
+        colors: {
+          ...DefaultTheme.colors,
+          background: colors.background,
+          card: colors.surface,
+          text: colors.text,
+          border: colors.border,
+          primary: colors.primary,
+        },
+      };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       <Tab.Navigator
         screenOptions={{
-          tabBarActiveTintColor: '#2563eb',
-          tabBarInactiveTintColor: '#6b7280',
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.textSecondary,
+          tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
           headerShown: false,
         }}
       >
@@ -149,7 +225,7 @@ export default function AppNavigator() {
         />
         <Tab.Screen
           name="Settings"
-          component={SettingsScreen}
+          component={SettingsStackNavigator}
           options={{
             tabBarLabel: 'Settings',
             tabBarIcon: ({ color, size }) => (

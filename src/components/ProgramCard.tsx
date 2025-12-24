@@ -27,6 +27,14 @@ const CATEGORY_ICONS: { [key: string]: string } = {
   'other': '📋',
 };
 
+// Format eligibility tag to Title Case
+const formatEligibilityTag = (tag: string): string => {
+  return tag
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 function ProgramCard({
   program,
   onPress,
@@ -77,7 +85,7 @@ function ProgramCard({
           <View style={styles.tags}>
             {program.eligibility.slice(0, 2).map((tag) => (
               <View key={tag} style={[styles.tag, { backgroundColor: isDark ? '#1e3a5f' : '#dbeafe' }]}>
-                <Text style={[styles.tagText, { color: isDark ? '#93c5fd' : '#1e40af' }]}>{tag}</Text>
+                <Text style={[styles.tagText, { color: isDark ? '#93c5fd' : '#1e40af' }]}>{formatEligibilityTag(tag)}</Text>
               </View>
             ))}
             {program.eligibility.length > 2 && (

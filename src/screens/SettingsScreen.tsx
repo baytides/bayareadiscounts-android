@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   Alert,
   Linking,
-  SafeAreaView,
   Image,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
@@ -201,7 +200,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView>
         {/* Logo Banner */}
         <View style={[styles.logoContainer, { backgroundColor: colors.surface }]}>
@@ -373,7 +372,7 @@ export default function SettingsScreen() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
