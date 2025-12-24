@@ -253,6 +253,9 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
             selectedEligibility.length === 0 && styles.filterChipActive,
           ]}
           onPress={() => setSelectedEligibility([])}
+          accessibilityRole="button"
+          accessibilityLabel="All eligibility types"
+          accessibilityState={{ selected: selectedEligibility.length === 0 }}
         >
           <Text style={[styles.filterText, { color: colors.text }, selectedEligibility.length === 0 && styles.filterTextActive]}>
             All
@@ -268,8 +271,11 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
               selectedEligibility.includes(eligibility.id) && styles.filterChipActive,
             ]}
             onPress={() => toggleEligibility(eligibility.id)}
+            accessibilityRole="button"
+            accessibilityLabel={`${eligibility.name} eligibility`}
+            accessibilityState={{ selected: selectedEligibility.includes(eligibility.id) }}
           >
-            <Text style={styles.filterIcon}>{eligibility.icon}</Text>
+            <Text style={styles.filterIcon} accessible={false}>{eligibility.icon}</Text>
             <Text
               style={[
                 styles.filterText,
@@ -300,6 +306,9 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
             !selectedCategory && styles.filterChipActive,
           ]}
           onPress={() => setSelectedCategory(null)}
+          accessibilityRole="button"
+          accessibilityLabel="All categories"
+          accessibilityState={{ selected: !selectedCategory }}
         >
           <Text style={[styles.filterText, { color: colors.text }, !selectedCategory && styles.filterTextActive]}>
             All
@@ -317,8 +326,11 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
                 selectedCategory === categoryId && styles.filterChipActive,
               ]}
               onPress={() => setSelectedCategory(categoryId)}
+              accessibilityRole="button"
+              accessibilityLabel={`${config.name} category`}
+              accessibilityState={{ selected: selectedCategory === categoryId }}
             >
-              <Text style={styles.filterIcon}>{config.icon}</Text>
+              <Text style={styles.filterIcon} accessible={false}>{config.icon}</Text>
               <Text
                 style={[
                   styles.filterText,
@@ -350,6 +362,9 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
             !selectedArea && styles.filterChipActive,
           ]}
           onPress={() => setSelectedArea(null)}
+          accessibilityRole="button"
+          accessibilityLabel="All areas"
+          accessibilityState={{ selected: !selectedArea }}
         >
           <Text style={[styles.filterText, { color: colors.text }, !selectedArea && styles.filterTextActive]}>
             All
@@ -365,8 +380,11 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
               selectedArea === county.id && styles.filterChipActive,
             ]}
             onPress={() => setSelectedArea(county.id)}
+            accessibilityRole="button"
+            accessibilityLabel={`${county.name} area`}
+            accessibilityState={{ selected: selectedArea === county.id }}
           >
-            <Text style={styles.filterIcon}>{county.icon}</Text>
+            <Text style={styles.filterIcon} accessible={false}>{county.icon}</Text>
             <Text
               style={[
                 styles.filterText,
@@ -386,8 +404,11 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
             selectedArea === 'none' && styles.filterChipActive,
           ]}
           onPress={() => setSelectedArea('none')}
+          accessibilityRole="button"
+          accessibilityLabel="None of the above - show broad area programs only"
+          accessibilityState={{ selected: selectedArea === 'none' }}
         >
-          <Text style={styles.filterIcon}>🌐</Text>
+          <Text style={styles.filterIcon} accessible={false}>🌐</Text>
           <Text
             style={[
               styles.filterText,
@@ -431,6 +452,9 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
               setSelectedEligibility([]);
             }}
             style={styles.clearFiltersButton}
+            accessibilityRole="button"
+            accessibilityLabel="Clear all filters"
+            accessibilityHint="Double-tap to remove all active filters"
           >
             <Text style={[styles.clearFiltersText, { color: colors.primary }]}>Clear filters</Text>
           </TouchableOpacity>

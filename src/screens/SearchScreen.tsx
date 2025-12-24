@@ -195,10 +195,18 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
             autoCorrect={false}
             returnKeyType="search"
             onSubmitEditing={handleSearch}
+            accessibilityLabel="Search programs"
+            accessibilityHint="Enter at least 2 characters to search"
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
-              <Text style={[styles.clearIcon, { color: colors.textSecondary }]}>✕</Text>
+            <TouchableOpacity
+              onPress={clearSearch}
+              style={styles.clearButton}
+              accessibilityRole="button"
+              accessibilityLabel="Clear search"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={[styles.clearIcon, { color: colors.textSecondary }]} accessible={false}>✕</Text>
             </TouchableOpacity>
           )}
         </View>
