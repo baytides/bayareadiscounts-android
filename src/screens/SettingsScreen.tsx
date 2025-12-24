@@ -12,9 +12,14 @@ import {
   Alert,
   Linking,
   SafeAreaView,
+  Image,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import APIService from '../services/api';
-import { version } from '../../app.json';
+import appConfig from '../../app.json';
+import { useTheme } from '../context/ThemeContext';
+
+const version = appConfig.expo.version;
 
 // Format bytes into a human-readable string
 const formatBytes = (bytes: number, decimals = 2) => {
@@ -27,6 +32,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
 };
 
 export default function SettingsScreen() {
+  const { colors, mode, setMode, isDark } = useTheme();
   const [cacheSize, setCacheSize] = useState<string>('Calculating...');
   const [metadata, setMetadata] = useState<any>(null);
 
@@ -95,6 +101,16 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleDonate = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const url = 'https://baytides.org/donate';
+    try {
+      await Linking.openURL(url);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to open donation page');
+    }
+  };
+
   const handleReportIssue = async () => {
     const url = 'https://github.com/baytides/mobile-apps/issues';
     try {
@@ -153,32 +169,94 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleThemeChange = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Alert.alert(
+      'Appearance',
+      'Choose your preferred theme',
+      [
+        {
+          text: 'Light',
+          onPress: () => setMode('light'),
+        },
+        {
+          text: 'Dark',
+          onPress: () => setMode('dark'),
+        },
+        {
+          text: 'System',
+          onPress: () => setMode('system'),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
+
+  const getThemeModeLabel = () => {
+    switch (mode) {
+      case 'light': return 'Light';
+      case 'dark': return 'Dark';
+      case 'system': return 'System';
+    }
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView>
+        {/* Logo Banner */}
+        <View style={[styles.logoContainer, { backgroundColor: colors.surface }]}>
+          <Image
+            source={require('../../assets/images/favicons/web-app-manifest-512x512.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+          <Text style={[styles.logoText, { color: colors.text }]}>Bay Area Discounts</Text>
+          <Text style={[styles.logoTagline, { color: colors.textSecondary }]}>
+            Your guide to local savings & benefits
+          </Text>
+        </View>
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Appearance</Text>
+          <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
+            <TouchableOpacity
+              style={styles.rowButton}
+              onPress={handleThemeChange}
+              accessibilityLabel="Change theme"
+              accessibilityRole="button"
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.buttonIcon}>{isDark ? '🌙' : '☀️'}</Text>
+                <Text style={[styles.buttonText, { color: colors.primary }]}>Theme</Text>
+              </View>
+              <Text style={[styles.value, { color: colors.textSecondary }]}>{getThemeModeLabel()}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>About</Text>
+          <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
             <View style={styles.row}>
-              <Text style={styles.label}>App Version</Text>
-              <Text style={styles.value}>{version}</Text>
+              <Text style={[styles.label, { color: colors.text }]}>App Version</Text>
+              <Text style={[styles.value, { color: colors.textSecondary }]}>{version}</Text>
             </View>
             {metadata && (
               <>
-                <View style={styles.divider} />
+                <View style={[styles.divider, { backgroundColor: colors.border }]} />
                 <View style={styles.row}>
-                  <Text style={styles.label}>API Version</Text>
-                  <Text style={styles.value}>{metadata.version}</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>API Version</Text>
+                  <Text style={[styles.value, { color: colors.textSecondary }]}>{metadata.version}</Text>
                 </View>
-                <View style={styles.divider} />
+                <View style={[styles.divider, { backgroundColor: colors.border }]} />
                 <View style={styles.row}>
-                  <Text style={styles.label}>Total Programs</Text>
-                  <Text style={styles.value}>{metadata.totalPrograms}</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>Total Programs</Text>
+                  <Text style={[styles.value, { color: colors.textSecondary }]}>{metadata.totalPrograms}</Text>
                 </View>
-                <View style={styles.divider} />
+                <View style={[styles.divider, { backgroundColor: colors.border }]} />
                 <View style={styles.row}>
-                  <Text style={styles.label}>Last Updated</Text>
-                  <Text style={styles.value}>
+                  <Text style={[styles.label, { color: colors.text }]}>Last Updated</Text>
+                  <Text style={[styles.value, { color: colors.textSecondary }]}>
                     {new Date(metadata.generatedAt).toLocaleDateString()}
                   </Text>
                 </View>
@@ -188,25 +266,25 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Storage</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Storage</Text>
+          <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
             <View style={styles.row}>
-              <Text style={styles.label}>Cache Size</Text>
-              <Text style={styles.value}>{cacheSize}</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Cache Size</Text>
+              <Text style={[styles.value, { color: colors.textSecondary }]}>{cacheSize}</Text>
             </View>
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
             <TouchableOpacity
               style={styles.rowButton}
               onPress={handleClearCache}
             >
-              <Text style={styles.buttonTextDanger}>Clear Cache</Text>
+              <Text style={[styles.buttonTextDanger, { color: colors.danger }]}>Clear Cache</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Feedback</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Feedback</Text>
+          <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
             <TouchableOpacity
               style={styles.rowButton}
               onPress={handleSendFeedback}
@@ -215,11 +293,11 @@ export default function SettingsScreen() {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.buttonIcon}>💬</Text>
-                <Text style={styles.buttonText}>Send Feedback</Text>
+                <Text style={[styles.buttonText, { color: colors.primary }]}>Send Feedback</Text>
               </View>
-              <Text style={styles.chevron}>›</Text>
+              <Text style={[styles.chevron, { color: colors.border }]}>›</Text>
             </TouchableOpacity>
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
             <TouchableOpacity
               style={styles.rowButton}
               onPress={handleReportIssue}
@@ -228,16 +306,36 @@ export default function SettingsScreen() {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.buttonIcon}>🐛</Text>
-                <Text style={styles.buttonText}>Report an Issue</Text>
+                <Text style={[styles.buttonText, { color: colors.primary }]}>Report an Issue</Text>
               </View>
-              <Text style={styles.chevron}>›</Text>
+              <Text style={[styles.chevron, { color: colors.border }]}>›</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Support</Text>
-          <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Support Our Work</Text>
+          <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
+            <View style={[styles.donationHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.donationTitle, { color: colors.text }]}>💚 Help Keep This App Free</Text>
+              <Text style={[styles.donationDescription, { color: colors.textSecondary }]}>
+                Bay Area Discounts is a volunteer-run project. Your donation helps us maintain the app and add new programs.
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.donateButton, { backgroundColor: colors.success }]}
+              onPress={handleDonate}
+              accessibilityLabel="Donate to support Bay Area Discounts"
+              accessibilityRole="button"
+            >
+              <Text style={styles.donateButtonText}>Donate via Website</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Links</Text>
+          <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
             <TouchableOpacity
               style={styles.rowButton}
               onPress={handleOpenWebsite}
@@ -246,11 +344,11 @@ export default function SettingsScreen() {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.buttonIcon}>🌐</Text>
-                <Text style={styles.buttonText}>Visit Website</Text>
+                <Text style={[styles.buttonText, { color: colors.primary }]}>Visit Website</Text>
               </View>
-              <Text style={styles.chevron}>›</Text>
+              <Text style={[styles.chevron, { color: colors.border }]}>›</Text>
             </TouchableOpacity>
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
             <TouchableOpacity
               style={styles.rowButton}
               onPress={handleOpenBayTides}
@@ -259,18 +357,18 @@ export default function SettingsScreen() {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.buttonIcon}>🌊</Text>
-                <Text style={styles.buttonText}>Bay Tides (Parent Org)</Text>
+                <Text style={[styles.buttonText, { color: colors.primary }]}>Bay Tides (Parent Org)</Text>
               </View>
-              <Text style={styles.chevron}>›</Text>
+              <Text style={[styles.chevron, { color: colors.border }]}>›</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>
+          <Text style={[styles.footerText, { color: colors.text }]}>
             Bay Area Discounts - a Bay Tides project
           </Text>
-          <Text style={styles.footerSubtext}>
+          <Text style={[styles.footerSubtext, { color: colors.textSecondary }]}>
             Connecting residents to public benefits and community resources
           </Text>
         </View>
@@ -282,7 +380,26 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    paddingHorizontal: 32,
+  },
+  logoImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 16,
+    marginBottom: 12,
+  },
+  logoText: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  logoTagline: {
+    fontSize: 14,
+    textAlign: 'center',
   },
   section: {
     marginTop: 24,
@@ -291,13 +408,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6b7280',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 8,
   },
   card: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -322,19 +437,15 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    color: '#374151',
   },
   value: {
     fontSize: 16,
-    color: '#6b7280',
   },
   buttonText: {
     fontSize: 16,
-    color: '#2563eb',
   },
   buttonTextDanger: {
     fontSize: 16,
-    color: '#dc2626',
   },
   buttonIcon: {
     fontSize: 20,
@@ -342,11 +453,9 @@ const styles = StyleSheet.create({
   },
   chevron: {
     fontSize: 24,
-    color: '#d1d5db',
   },
   divider: {
     height: 1,
-    backgroundColor: '#e5e7eb',
     marginLeft: 16,
   },
   footer: {
@@ -356,12 +465,41 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
     marginBottom: 4,
   },
   footerSubtext: {
     fontSize: 13,
-    color: '#9ca3af',
     textAlign: 'center',
+  },
+  donationHeader: {
+    padding: 16,
+    borderBottomWidth: 1,
+  },
+  donationTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  donationDescription: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  donateButton: {
+    margin: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#10b981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  donateButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
   },
 });

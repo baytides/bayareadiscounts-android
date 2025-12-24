@@ -1,11 +1,21 @@
 import { StatusBar } from 'expo-status-bar';
 import AppNavigator from './src/navigation/AppNavigator';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 
-export default function App() {
+function AppContent() {
+  const { isDark } = useTheme();
   return (
     <>
       <AppNavigator />
-      <StatusBar style="auto" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }

@@ -3,7 +3,9 @@
     "name": "Bay Area Discounts",
     "slug": "bayareadiscounts-android",
     "version": "1.0.0",
-    "platforms": ["android"],
+    "platforms": [
+      "android"
+    ],
     "orientation": "portrait",
     "icon": "./assets/images/favicons/web-app-manifest-512x512.png",
     "userInterfaceStyle": "light",
@@ -22,7 +24,17 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "permissions": ["INTERNET"]
-    }
+      "permissions": [
+        "INTERNET"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "59df8fc5-a5c7-4bf4-929d-b8e0a49daad1"
+      }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }
