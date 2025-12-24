@@ -10,6 +10,7 @@ export interface Program {
   description: string;
   eligibility: string[];
   areas: string[];
+  city: string | null;
   website: string;
   cost: string | null;
   phone: string | null;

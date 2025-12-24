@@ -43,7 +43,8 @@ function ProgramCard({
 }: ProgramCardProps) {
   const { colors, isDark } = useTheme();
   const categoryIcon = CATEGORY_ICONS[program.category] || '📋';
-  const areaText = program.areas.join(', ');
+  // Display city if available, otherwise fall back to areas (county)
+  const areaText = program.city || program.areas.join(', ');
 
   return (
     <TouchableOpacity
