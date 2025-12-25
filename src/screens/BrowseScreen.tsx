@@ -436,7 +436,7 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
           ]}
           onPress={() => setSelectedArea('none')}
           accessibilityRole="button"
-          accessibilityLabel="None of the above - show broad area programs only"
+          accessibilityLabel="Other - show broad area programs only"
           accessibilityState={{ selected: selectedArea === 'none' }}
         >
           <Text style={styles.filterIcon} accessible={false}>🌐</Text>
@@ -447,7 +447,7 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
               selectedArea === 'none' && styles.filterTextActive,
             ]}
           >
-            None of the Above
+            Other
           </Text>
         </TouchableOpacity>
       </ScrollView>
