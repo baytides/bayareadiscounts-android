@@ -13,7 +13,6 @@ import { useTheme } from '../context/ThemeContext';
 // Screens
 import BrowseScreen from '../screens/BrowseScreen';
 import SearchScreen from '../screens/SearchScreen';
-import FavoritesScreen from '../screens/FavoritesScreen';
 import ProgramDetailScreen from '../screens/ProgramDetailScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
@@ -21,7 +20,6 @@ import SettingsScreen from '../screens/SettingsScreen';
 export type RootTabParamList = {
   Browse: undefined;
   Search: undefined;
-  Favorites: undefined;
   Settings: undefined;
 };
 
@@ -35,11 +33,6 @@ export type SearchStackParamList = {
   ProgramDetail: { programId: string };
 };
 
-export type FavoritesStackParamList = {
-  FavoritesList: undefined;
-  ProgramDetail: { programId: string };
-};
-
 export type SettingsStackParamList = {
   SettingsList: undefined;
 };
@@ -47,7 +40,6 @@ export type SettingsStackParamList = {
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const BrowseStack = createNativeStackNavigator<BrowseStackParamList>();
 const SearchStack = createNativeStackNavigator<SearchStackParamList>();
-const FavoritesStack = createNativeStackNavigator<FavoritesStackParamList>();
 const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 
 /**
@@ -101,33 +93,6 @@ function SearchStackNavigator() {
         options={{ title: 'Program Details' }}
       />
     </SearchStack.Navigator>
-  );
-}
-
-/**
- * Favorites Stack Navigator
- */
-function FavoritesStackNavigator() {
-  const { colors } = useTheme();
-  return (
-    <FavoritesStack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.text,
-        headerTitleStyle: { color: colors.text },
-      }}
-    >
-      <FavoritesStack.Screen
-        name="FavoritesList"
-        component={FavoritesScreen}
-        options={{ title: 'Saved Programs' }}
-      />
-      <FavoritesStack.Screen
-        name="ProgramDetail"
-        component={ProgramDetailScreen}
-        options={{ title: 'Program Details' }}
-      />
-    </FavoritesStack.Navigator>
   );
 }
 
@@ -210,16 +175,6 @@ export default function AppNavigator() {
             tabBarLabel: 'Search',
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="search-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Favorites"
-          component={FavoritesStackNavigator}
-          options={{
-            tabBarLabel: 'Saved',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="star-outline" size={size} color={color} />
             ),
           }}
         />
