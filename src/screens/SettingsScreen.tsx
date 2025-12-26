@@ -13,6 +13,8 @@ import {
   Linking,
   Image,
   Switch,
+  AccessibilityInfo,
+  Platform,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import APIService from '../services/api';
@@ -22,6 +24,7 @@ import {
   loadCrashReportingPreference,
   setCrashReportingEnabled,
 } from '../utils/crashReporting';
+import { forceCheckForUpdates } from '../utils/updateChecker';
 
 const version = appConfig.expo.version;
 
@@ -40,12 +43,42 @@ export default function SettingsScreen() {
   const [cacheSize, setCacheSize] = useState<string>('Calculating...');
   const [metadata, setMetadata] = useState<any>(null);
   const [crashReportingEnabled, setCrashReporting] = useState<boolean>(true);
+  const [reduceMotionEnabled, setReduceMotionEnabled] = useState<boolean>(false);
+  const [screenReaderEnabled, setScreenReaderEnabled] = useState<boolean>(false);
+  const [checkingForUpdates, setCheckingForUpdates] = useState<boolean>(false);
 
   useEffect(() => {
     loadMetadata();
     calculateCacheSize();
     loadCrashReportingSetting();
+    checkAccessibilitySettings();
   }, []);
+
+  const checkAccessibilitySettings = async () => {
+    try {
+      const reduceMotion = await AccessibilityInfo.isReduceMotionEnabled();
+      const screenReader = await AccessibilityInfo.isScreenReaderEnabled();
+      setReduceMotionEnabled(reduceMotion);
+      setScreenReaderEnabled(screenReader);
+    } catch (err) {
+      console.error('Error checking accessibility settings:', err);
+    }
+
+    // Listen for changes
+    const reduceMotionSubscription = AccessibilityInfo.addEventListener(
+      'reduceMotionChanged',
+      (enabled) => setReduceMotionEnabled(enabled)
+    );
+    const screenReaderSubscription = AccessibilityInfo.addEventListener(
+      'screenReaderChanged',
+      (enabled) => setScreenReaderEnabled(enabled)
+    );
+
+    return () => {
+      reduceMotionSubscription?.remove();
+      screenReaderSubscription?.remove();
+    };
+  };
 
   const loadCrashReportingSetting = async () => {
     const enabled = await loadCrashReportingPreference();
@@ -243,6 +276,94 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleOpenAccessibilitySettings = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      if (Platform.OS === 'android') {
+        await Linking.openSettings();
+      } else {
+        // iOS - open app settings which links to accessibility
+        await Linking.openURL('app-settings:');
+      }
+    } catch (err) {
+      Alert.alert(
+        'Cannot Open Settings',
+        'Please open your device Settings app and navigate to Accessibility.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
+  const handleShowAccessibilityInfo = () => {
+    Alert.alert(
+      'Accessibility Features',
+      'This app supports the following accessibility features:\n\n' +
+      '• Screen Reader (TalkBack/VoiceOver): All elements are properly labeled for screen readers.\n\n' +
+      '• Reduce Motion: Animations are disabled when this setting is enabled in your device settings.\n\n' +
+      '• Font Scaling: Text sizes respect your device\'s font size preferences (up to 1.5x).\n\n' +
+      '• Dark Mode: Reduces eye strain in low-light conditions.\n\n' +
+      '• High Contrast: Compatible with system high contrast modes.\n\n' +
+      'To adjust these settings, go to your device\'s Accessibility settings.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleCheckForUpdates = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCheckingForUpdates(true);
+
+    try {
+      // Check for app updates
+      const updateResult = await forceCheckForUpdates();
+
+      // Also check for database/API updates
+      const currentMeta = metadata;
+      const freshMeta = await APIService.getMetadata(true); // Force refresh
+
+      const hasDataUpdate = currentMeta && freshMeta &&
+        new Date(freshMeta.generatedAt) > new Date(currentMeta.generatedAt);
+
+      if (updateResult.hasUpdate) {
+        Alert.alert(
+          'App Update Available',
+          `Version ${updateResult.latestVersion} is available.\n\nYour data will be preserved when you update.`,
+          [
+            { text: 'Later', style: 'cancel' },
+            {
+              text: 'Download',
+              onPress: async () => {
+                if (updateResult.downloadUrl) {
+                  await Linking.openURL(updateResult.downloadUrl);
+                }
+              },
+            },
+          ]
+        );
+      } else if (hasDataUpdate) {
+        setMetadata(freshMeta);
+        Alert.alert(
+          'Database Updated',
+          `Program data has been refreshed.\n\nTotal programs: ${freshMeta.totalPrograms}\nLast updated: ${new Date(freshMeta.generatedAt).toLocaleDateString()}`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'You\'re Up to Date',
+          'You have the latest version of the app and program data.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        'Check Failed',
+        'Unable to check for updates. Please check your internet connection and try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setCheckingForUpdates(false);
+    }
+  };
+
   const getThemeModeLabel = () => {
     switch (mode) {
       case 'light': return 'Light';
@@ -286,6 +407,61 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Accessibility</Text>
+          <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
+            <View style={styles.row}>
+              <View style={styles.rowTextContainer}>
+                <Text style={[styles.label, { color: colors.text }]}>Screen Reader</Text>
+                <Text style={[styles.sublabel, { color: colors.textSecondary }]}>
+                  {screenReaderEnabled ? 'TalkBack is active' : 'Not active'}
+                </Text>
+              </View>
+              <Text style={[styles.statusIndicator, { color: screenReaderEnabled ? colors.success : colors.textSecondary }]}>
+                {screenReaderEnabled ? '●' : '○'}
+              </Text>
+            </View>
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={styles.row}>
+              <View style={styles.rowTextContainer}>
+                <Text style={[styles.label, { color: colors.text }]}>Reduce Motion</Text>
+                <Text style={[styles.sublabel, { color: colors.textSecondary }]}>
+                  {reduceMotionEnabled ? 'Animations reduced' : 'Animations enabled'}
+                </Text>
+              </View>
+              <Text style={[styles.statusIndicator, { color: reduceMotionEnabled ? colors.success : colors.textSecondary }]}>
+                {reduceMotionEnabled ? '●' : '○'}
+              </Text>
+            </View>
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <TouchableOpacity
+              style={styles.rowButton}
+              onPress={handleShowAccessibilityInfo}
+              accessibilityLabel="View supported accessibility features"
+              accessibilityRole="button"
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.buttonIcon}>ℹ️</Text>
+                <Text style={[styles.buttonText, { color: colors.primary }]}>Supported Features</Text>
+              </View>
+              <Text style={[styles.chevron, { color: colors.border }]}>›</Text>
+            </TouchableOpacity>
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <TouchableOpacity
+              style={styles.rowButton}
+              onPress={handleOpenAccessibilitySettings}
+              accessibilityLabel="Open device accessibility settings"
+              accessibilityRole="button"
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.buttonIcon}>⚙️</Text>
+                <Text style={[styles.buttonText, { color: colors.primary }]}>Device Settings</Text>
+              </View>
+              <Text style={[styles.chevron, { color: colors.border }]}>›</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>About</Text>
           <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
             <View style={styles.row}>
@@ -313,6 +489,23 @@ export default function SettingsScreen() {
                 </View>
               </>
             )}
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <TouchableOpacity
+              style={styles.rowButton}
+              onPress={handleCheckForUpdates}
+              disabled={checkingForUpdates}
+              accessibilityLabel="Check for app and data updates"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: checkingForUpdates }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.buttonIcon}>🔄</Text>
+                <Text style={[styles.buttonText, { color: checkingForUpdates ? colors.textSecondary : colors.primary }]}>
+                  {checkingForUpdates ? 'Checking...' : 'Check for Updates'}
+                </Text>
+              </View>
+              <Text style={[styles.chevron, { color: colors.border }]}>›</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -576,6 +769,10 @@ const styles = StyleSheet.create({
   },
   chevron: {
     fontSize: 24,
+  },
+  statusIndicator: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   divider: {
     height: 1,

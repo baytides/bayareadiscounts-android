@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/react';
 import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { loadCrashReportingPreference } from './src/utils/crashReporting';
+import { checkForUpdates } from './src/utils/updateChecker';
 
 // Flag to track if Sentry has been initialized
 let sentryInitialized = false;
@@ -54,6 +55,12 @@ function App() {
         initializeSentry();
       }
       setReady(true);
+
+      // Check for updates after app is ready (non-blocking)
+      // Small delay to let the app fully initialize first
+      setTimeout(() => {
+        checkForUpdates();
+      }, 2000);
     }
     init();
   }, []);
