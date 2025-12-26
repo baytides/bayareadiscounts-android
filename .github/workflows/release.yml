@@ -1,4 +1,4 @@
-name: Build and Release APK
+name: Build and Release Android
 
 on:
   push:
@@ -31,18 +31,43 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install EAS CLI
-        run: npm install -g eas-cli
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
 
-      - name: Build APK
-        run: eas build --platform android --profile preview --local --output bay-area-discounts.apk --non-interactive
+      - name: Build signed APK
+        working-directory: android
+        run: ./gradlew assembleRelease
         env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          ANDROID_KEYSTORE_FILE: upload-keystore.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Build signed AAB
+        working-directory: android
+        run: ./gradlew bundleRelease
+        env:
+          ANDROID_KEYSTORE_FILE: upload-keystore.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Rename artifacts
+        run: |
+          mv android/app/build/outputs/apk/release/app-release.apk bay-area-discounts-${{ steps.version.outputs.VERSION }}.apk
+          mv android/app/build/outputs/bundle/release/app-release.aab bay-area-discounts-${{ steps.version.outputs.VERSION }}.aab
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: bay-area-discounts.apk
+          files: |
+            bay-area-discounts-${{ steps.version.outputs.VERSION }}.apk
+            bay-area-discounts-${{ steps.version.outputs.VERSION }}.aab
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
