@@ -15,6 +15,7 @@ import BrowseScreen from '../screens/BrowseScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ProgramDetailScreen from '../screens/ProgramDetailScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import AccessibilityScreen from '../screens/AccessibilityScreen';
 
 // Type definitions for navigation
 export type RootTabParamList = {
@@ -35,6 +36,7 @@ export type SearchStackParamList = {
 
 export type SettingsStackParamList = {
   SettingsList: undefined;
+  Accessibility: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -113,6 +115,11 @@ function SettingsStackNavigator() {
         name="SettingsList"
         component={SettingsScreen}
         options={{ title: 'Settings' }}
+      />
+      <SettingsStack.Screen
+        name="Accessibility"
+        component={AccessibilityScreen}
+        options={{ title: 'Accessibility' }}
       />
     </SettingsStack.Navigator>
   );
