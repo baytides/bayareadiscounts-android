@@ -1,0 +1,33 @@
+--- a/android/app/build.gradle
++++ b/android/app/build.gradle
+@@ -100,6 +100,17 @@ android {
+             storePassword 'android'
+             keyAlias 'androiddebugkey'
+             keyPassword 'android'
++        }
++        release {
++            // Use env vars for CI, fallback to local keystore
++            if (System.getenv("ANDROID_KEYSTORE_FILE")) {
++                storeFile file(System.getenv("ANDROID_KEYSTORE_FILE"))
++                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
++                keyAlias System.getenv("ANDROID_KEY_ALIAS")
++                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
++            } else {
++                storeFile file(System.getProperty("user.home") + "/.android-keystores/bayareadiscounts.jks")
++                storePassword "bbd136510d51f905313f9350972e8680"
++                keyAlias "1899dc231e5253147f2fd2f0aa76fb1f"
++                keyPassword "9cb2a3662657f67dba130136db027d7d"
++            }
+         }
+     }
+     buildTypes {
+@@ -108,8 +119,7 @@ android {
+         }
+         release {
+-            // Caution! In production, you need to generate your own keystore file.
+-            // see https://reactnative.dev/docs/signed-apk-android.
+-            signingConfig signingConfigs.debug
++            signingConfig signingConfigs.release
+             shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false').toBoolean()
+             minifyEnabled enableMinifyInReleaseBuilds
+             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
