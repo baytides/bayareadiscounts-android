@@ -1,28 +1,38 @@
+import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import * as Sentry from '@sentry/react';
 import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { loadCrashReportingPreference } from './src/utils/crashReporting';
 
-// Initialize Sentry for crash reporting
-Sentry.init({
-  dsn: 'https://a901563a7a20408ba654c1012592ac34@o4510598177095680.ingest.us.sentry.io/4510598243745792',
-  // Disable in development
-  enabled: !__DEV__,
-  // Set sample rate for performance monitoring (0.2 = 20% of transactions)
-  tracesSampleRate: 0.2,
-  // Strip PII from crash reports
-  beforeSend(event) {
-    // Remove user IP address
-    if (event.user) {
-      delete event.user.ip_address;
-    }
-    // Remove device identifiers
-    if (event.contexts?.device) {
-      delete event.contexts.device.device_id;
-    }
-    return event;
-  },
-});
+// Flag to track if Sentry has been initialized
+let sentryInitialized = false;
+
+function initializeSentry() {
+  if (sentryInitialized) return;
+
+  Sentry.init({
+    dsn: 'https://a901563a7a20408ba654c1012592ac34@o4510598177095680.ingest.us.sentry.io/4510598243745792',
+    // Disable in development
+    enabled: !__DEV__,
+    // Set sample rate for performance monitoring (0.2 = 20% of transactions)
+    tracesSampleRate: 0.2,
+    // Strip PII from crash reports
+    beforeSend(event) {
+      // Remove user IP address
+      if (event.user) {
+        delete event.user.ip_address;
+      }
+      // Remove device identifiers
+      if (event.contexts?.device) {
+        delete event.contexts.device.device_id;
+      }
+      return event;
+    },
+  });
+
+  sentryInitialized = true;
+}
 
 function AppContent() {
   const { isDark } = useTheme();
@@ -35,6 +45,24 @@ function AppContent() {
 }
 
 function App() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    async function init() {
+      const crashReportingEnabled = await loadCrashReportingPreference();
+      if (crashReportingEnabled) {
+        initializeSentry();
+      }
+      setReady(true);
+    }
+    init();
+  }, []);
+
+  // Don't render until we've checked the preference
+  if (!ready) {
+    return null;
+  }
+
   return (
     <ThemeProvider>
       <AppContent />
@@ -42,5 +70,5 @@ function App() {
   );
 }
 
-// Export with Sentry error boundary
+// Export with Sentry error boundary (only wraps if Sentry is enabled)
 export default Sentry.withErrorBoundary(App, { fallback: <></> });

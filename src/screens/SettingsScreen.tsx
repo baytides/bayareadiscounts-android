@@ -12,11 +12,16 @@ import {
   Alert,
   Linking,
   Image,
+  Switch,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import APIService from '../services/api';
 import appConfig from '../../app.json';
 import { useTheme } from '../context/ThemeContext';
+import {
+  loadCrashReportingPreference,
+  setCrashReportingEnabled,
+} from '../utils/crashReporting';
 
 const version = appConfig.expo.version;
 
@@ -34,11 +39,32 @@ export default function SettingsScreen() {
   const { colors, mode, setMode, isDark } = useTheme();
   const [cacheSize, setCacheSize] = useState<string>('Calculating...');
   const [metadata, setMetadata] = useState<any>(null);
+  const [crashReportingEnabled, setCrashReporting] = useState<boolean>(true);
 
   useEffect(() => {
     loadMetadata();
     calculateCacheSize();
+    loadCrashReportingSetting();
   }, []);
+
+  const loadCrashReportingSetting = async () => {
+    const enabled = await loadCrashReportingPreference();
+    setCrashReporting(enabled);
+  };
+
+  const handleCrashReportingToggle = async (value: boolean) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCrashReporting(value);
+    await setCrashReportingEnabled(value);
+
+    if (!value) {
+      Alert.alert(
+        'Crash Reporting Disabled',
+        'Crash reporting has been disabled. This change will take full effect the next time you restart the app.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
 
   const loadMetadata = async () => {
     try {
@@ -98,6 +124,32 @@ export default function SettingsScreen() {
     } catch (err) {
       Alert.alert('Error', 'Failed to open website');
     }
+  };
+
+  const handleOpenTerms = async () => {
+    const url = 'https://bayareadiscounts.com/terms';
+    try {
+      await Linking.openURL(url);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to open Terms of Service');
+    }
+  };
+
+  const handleOpenPrivacy = async () => {
+    const url = 'https://bayareadiscounts.com/privacy';
+    try {
+      await Linking.openURL(url);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to open Privacy Policy');
+    }
+  };
+
+  const handleShowDisclaimer = () => {
+    Alert.alert(
+      'Disclaimer',
+      'This app is not affiliated with, endorsed by, or connected to any government agency. Bay Area Discounts is an independent project of Bay Tides, a 501(c)(3) nonprofit organization.\n\nProgram information is compiled from publicly available sources. Each program listing includes a link to the official source where you can verify current eligibility requirements and apply directly.',
+      [{ text: 'OK' }]
+    );
   };
 
   const handleDonate = async () => {
@@ -282,6 +334,26 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Privacy</Text>
+          <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
+            <View style={styles.row}>
+              <View style={styles.rowTextContainer}>
+                <Text style={[styles.label, { color: colors.text }]}>Crash Reporting</Text>
+                <Text style={[styles.sublabel, { color: colors.textSecondary }]}>
+                  Help improve the app by sending anonymous crash reports
+                </Text>
+              </View>
+              <Switch
+                value={crashReportingEnabled}
+                onValueChange={handleCrashReportingToggle}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor="#ffffff"
+              />
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Feedback</Text>
           <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
             <TouchableOpacity
@@ -364,16 +436,46 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Disclaimer</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Legal</Text>
           <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
-            <View style={styles.disclaimerContainer}>
-              <Text style={[styles.disclaimerText, { color: colors.textSecondary }]}>
-                This app is not affiliated with, endorsed by, or connected to any government agency. Bay Area Discounts is an independent project of Bay Tides, a 501(c)(3) nonprofit organization.
-              </Text>
-              <Text style={[styles.disclaimerText, { color: colors.textSecondary, marginTop: 12 }]}>
-                Program information is compiled from publicly available sources. Each program listing includes a link to the official source where you can verify current eligibility requirements and apply directly.
-              </Text>
-            </View>
+            <TouchableOpacity
+              style={styles.rowButton}
+              onPress={handleShowDisclaimer}
+              accessibilityLabel="View disclaimer"
+              accessibilityRole="button"
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.buttonIcon}>⚠️</Text>
+                <Text style={[styles.buttonText, { color: colors.primary }]}>Disclaimer</Text>
+              </View>
+              <Text style={[styles.chevron, { color: colors.border }]}>›</Text>
+            </TouchableOpacity>
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <TouchableOpacity
+              style={styles.rowButton}
+              onPress={handleOpenTerms}
+              accessibilityLabel="View Terms of Service"
+              accessibilityRole="link"
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.buttonIcon}>📄</Text>
+                <Text style={[styles.buttonText, { color: colors.primary }]}>Terms of Service</Text>
+              </View>
+              <Text style={[styles.chevron, { color: colors.border }]}>›</Text>
+            </TouchableOpacity>
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <TouchableOpacity
+              style={styles.rowButton}
+              onPress={handleOpenPrivacy}
+              accessibilityLabel="View Privacy Policy"
+              accessibilityRole="link"
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.buttonIcon}>🔒</Text>
+                <Text style={[styles.buttonText, { color: colors.primary }]}>Privacy Policy</Text>
+              </View>
+              <Text style={[styles.chevron, { color: colors.border }]}>›</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -451,6 +553,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
   },
+  sublabel: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  rowTextContainer: {
+    flex: 1,
+    marginRight: 12,
+  },
   value: {
     fontSize: 16,
   },
@@ -514,12 +624,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#ffffff',
-  },
-  disclaimerContainer: {
-    padding: 16,
-  },
-  disclaimerText: {
-    fontSize: 14,
-    lineHeight: 20,
   },
 });
