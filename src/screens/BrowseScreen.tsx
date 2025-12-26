@@ -2,7 +2,7 @@
  * Browse Screen - Main program listing
  */
 
-import React, { useEffect, useMemo, useState, useCallback, useLayoutEffect } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useLayoutEffect, useRef } from 'react';
 import {
   View,
   FlatList,
@@ -83,6 +83,7 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
 
   // Add saved toggle button to header
   useLayoutEffect(() => {
@@ -356,7 +357,7 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
                 { backgroundColor: colors.inputBackground },
                 selectedCategory === categoryId && styles.filterChipActive,
               ]}
-              onPress={() => setSelectedCategory(categoryId)}
+              onPress={() => setSelectedCategory(prev => prev === categoryId ? null : categoryId)}
               accessibilityRole="button"
               accessibilityLabel={`${config.name} category`}
               accessibilityState={{ selected: selectedCategory === categoryId }}
@@ -410,7 +411,7 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
               { backgroundColor: colors.inputBackground },
               selectedArea === county.id && styles.filterChipActive,
             ]}
-            onPress={() => setSelectedArea(county.id)}
+            onPress={() => setSelectedArea(prev => prev === county.id ? null : county.id)}
             accessibilityRole="button"
             accessibilityLabel={`${county.name} area`}
             accessibilityState={{ selected: selectedArea === county.id }}
@@ -434,7 +435,7 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
             { backgroundColor: colors.inputBackground },
             selectedArea === 'none' && styles.filterChipActive,
           ]}
-          onPress={() => setSelectedArea('none')}
+          onPress={() => setSelectedArea(prev => prev === 'none' ? null : 'none')}
           accessibilityRole="button"
           accessibilityLabel="Other - show broad area programs only"
           accessibilityState={{ selected: selectedArea === 'none' }}
@@ -497,6 +498,19 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
     );
   };
 
+  const renderListHeader = () => (
+    <View>
+      {renderEligibilityFilter()}
+      {renderCategoryFilter()}
+      {renderAreaFilter()}
+      {renderSortAndFilters()}
+    </View>
+  );
+
+  const scrollToTop = useCallback(() => {
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, []);
+
   if (loading) {
     return <LoadingSpinner message="Loading programs..." />;
   }
@@ -507,12 +521,8 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {renderEligibilityFilter()}
-      {renderCategoryFilter()}
-      {renderAreaFilter()}
-      {renderSortAndFilters()}
-
       <FlatList
+        ref={flatListRef}
         data={filteredPrograms}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
@@ -523,9 +533,11 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
             onToggleFavorite={() => handleToggleFavorite(item.id)}
           />
         )}
+        ListHeaderComponent={renderListHeader}
         contentContainerStyle={styles.listContent}
         refreshing={loading}
         onRefresh={loadData}
+        onScrollToIndexFailed={() => {}}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             {showSavedOnly ? (
