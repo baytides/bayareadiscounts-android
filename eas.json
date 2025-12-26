@@ -15,7 +15,11 @@
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "SENTRY_AUTH_TOKEN": "dummy"
+      }
     }
   },
   "submit": {

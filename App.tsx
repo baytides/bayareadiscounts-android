@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import * as Sentry from '@sentry/react-native';
+import * as Sentry from '@sentry/react';
 import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 
@@ -42,5 +42,5 @@ function App() {
   );
 }
 
-// Wrap with Sentry for automatic error boundary
-export default Sentry.wrap(App);
+// Export with Sentry error boundary
+export default Sentry.withErrorBoundary(App, { fallback: <></> });
