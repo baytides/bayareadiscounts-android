@@ -79,14 +79,18 @@ jobs:
 
       - name: Rename artifacts
         run: |
-          mv android/app/build/outputs/apk/release/app-release.apk bay-area-discounts-${{ steps.version.outputs.VERSION }}.apk
-          mv android/app/build/outputs/bundle/release/app-release.aab bay-area-discounts-${{ steps.version.outputs.VERSION }}.aab
+          cp android/app/build/outputs/apk/release/app-release.apk bay-area-discounts.apk
+          cp android/app/build/outputs/apk/release/app-release.apk bay-area-discounts-${{ steps.version.outputs.VERSION }}.apk
+          cp android/app/build/outputs/bundle/release/app-release.aab bay-area-discounts.aab
+          cp android/app/build/outputs/bundle/release/app-release.aab bay-area-discounts-${{ steps.version.outputs.VERSION }}.aab
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
+            bay-area-discounts.apk
             bay-area-discounts-${{ steps.version.outputs.VERSION }}.apk
+            bay-area-discounts.aab
             bay-area-discounts-${{ steps.version.outputs.VERSION }}.aab
           generate_release_notes: true
         env:
