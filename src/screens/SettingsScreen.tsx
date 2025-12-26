@@ -363,6 +363,20 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Disclaimer</Text>
+          <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
+            <View style={styles.disclaimerContainer}>
+              <Text style={[styles.disclaimerText, { color: colors.textSecondary }]}>
+                This app is not affiliated with, endorsed by, or connected to any government agency. Bay Area Discounts is an independent project of Bay Tides, a 501(c)(3) nonprofit organization.
+              </Text>
+              <Text style={[styles.disclaimerText, { color: colors.textSecondary, marginTop: 12 }]}>
+                Program information is compiled from publicly available sources. Each program listing includes a link to the official source where you can verify current eligibility requirements and apply directly.
+              </Text>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: colors.text }]}>
             Bay Area Discounts - a Bay Tides project
@@ -500,5 +514,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#ffffff',
+  },
+  disclaimerContainer: {
+    padding: 16,
+  },
+  disclaimerText: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

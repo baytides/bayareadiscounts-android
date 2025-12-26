@@ -199,10 +199,19 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
         </View>
       )}
 
+      {program.website && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Official Source</Text>
+          <TouchableOpacity onPress={handleOpenWebsite}>
+            <Text style={styles.sourceUrl}>{program.website}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View style={styles.actionButtons}>
         {program.website && (
           <TouchableOpacity style={styles.primaryButton} onPress={handleOpenWebsite}>
-            <Text style={styles.primaryButtonText}>Visit Website</Text>
+            <Text style={styles.primaryButtonText}>Visit Official Website</Text>
           </TouchableOpacity>
         )}
 
@@ -305,6 +314,11 @@ const styles = StyleSheet.create({
   areaText: {
     fontSize: 15,
     color: '#4b5563',
+  },
+  sourceUrl: {
+    fontSize: 14,
+    color: '#2563eb',
+    textDecorationLine: 'underline',
   },
   actionButtons: {
     marginTop: 8,
