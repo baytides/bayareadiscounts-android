@@ -1,16 +1,17 @@
 {
   "name": "bayareadiscounts-android",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "index.ts",
   "scripts": {
     "start": "expo start --android",
-    "android": "expo start --android",
+    "android": "expo run:android",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --write .",
     "test": "jest",
     "prebuild": "expo prebuild --platform android",
     "run:device": "expo run:android --device",
-    "run:emulator": "expo run:android"
+    "run:emulator": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

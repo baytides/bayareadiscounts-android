@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bay Area Discounts",
     "slug": "bayareadiscounts-android",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "platforms": [
       "android"
     ],
@@ -17,7 +17,7 @@
     },
     "android": {
       "package": "org.baytides.bayareadiscounts",
-      "versionCode": 3,
+      "versionCode": 4,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/favicons/adaptive-icon-foreground.png",
         "backgroundColor": "#ffffff"
