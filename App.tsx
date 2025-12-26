@@ -5,6 +5,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { loadCrashReportingPreference } from './src/utils/crashReporting';
 import { checkForUpdates } from './src/utils/updateChecker';
+import appConfig from './app.json';
 
 // Flag to track if Sentry has been initialized
 let sentryInitialized = false;
@@ -16,8 +17,13 @@ function initializeSentry() {
     dsn: 'https://a901563a7a20408ba654c1012592ac34@o4510598177095680.ingest.us.sentry.io/4510598243745792',
     // Disable in development
     enabled: !__DEV__,
-    // Set sample rate for performance monitoring (0.2 = 20% of transactions)
-    tracesSampleRate: 0.2,
+    // Release tracking for better debugging
+    release: `org.baytides.bayareadiscounts@${appConfig.expo.version}+${appConfig.expo.android.versionCode}`,
+    environment: __DEV__ ? 'development' : 'production',
+    // Disable performance tracing for privacy
+    tracesSampleRate: 0,
+    // Don't send default PII
+    sendDefaultPii: false,
     // Strip PII from crash reports
     beforeSend(event) {
       // Remove user IP address

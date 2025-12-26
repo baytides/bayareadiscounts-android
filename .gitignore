@@ -51,3 +51,9 @@ logs/
 *.log
 build-1766710406199.aab
 *.aab
+
+# Duplicate files (macOS/backup artifacts)
+* 2
+* 2.*
+* 3
+* 3.*
