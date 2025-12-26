@@ -71,3 +71,14 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to Google Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: org.baytides.bayareadiscounts
+          releaseFiles: bay-area-discounts-${{ steps.version.outputs.VERSION }}.aab
+          track: internal
+          status: completed
+          releaseName: ${{ steps.version.outputs.VERSION }}
+          whatsNewDirectory: whatsnew
