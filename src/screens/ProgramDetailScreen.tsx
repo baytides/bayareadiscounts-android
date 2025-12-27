@@ -21,6 +21,8 @@ import APIService from '../services/api';
 import { openExternalUrl } from '../utils/openExternal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import { useTheme } from '../context/ThemeContext';
+import { useResponsive } from '../hooks/useResponsive';
 
 type Props = NativeStackScreenProps<BrowseStackParamList, 'ProgramDetail'>;
 
@@ -37,6 +39,8 @@ const CATEGORY_ICONS: { [key: string]: string } = {
 
 export default function ProgramDetailScreen({ route, navigation }: Props) {
   const { programId } = route.params;
+  const { colors } = useTheme();
+  const { maxContentWidth, horizontalPadding, isTablet, width } = useResponsive();
   const [program, setProgram] = useState<Program | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -127,12 +131,19 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
 
   const categoryIcon = CATEGORY_ICONS[program.category] || '📋';
 
+  // Calculate centered content padding for tablets
+  const contentPadding = isTablet ? Math.max((width - maxContentWidth) / 2, horizontalPadding) : 16;
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={[styles.content, { paddingHorizontal: contentPadding }]}
+    >
+      <View style={[styles.contentWrapper, isTablet && { maxWidth: maxContentWidth, alignSelf: 'center', width: '100%' }]}>
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <Text style={styles.icon}>{categoryIcon}</Text>
-          <Text style={styles.title}>{program.name}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{program.name}</Text>
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity
@@ -154,85 +165,86 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
         </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Description</Text>
-        <Text style={styles.description}>{program.description}</Text>
+      <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Description</Text>
+        <Text style={[styles.description, { color: colors.textSecondary }]}>{program.description}</Text>
       </View>
 
       {program.eligibility.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Eligibility</Text>
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Eligibility</Text>
           {program.eligibility.map((item, index) => (
             <View key={index} style={styles.listItem}>
-              <Text style={styles.bullet}>•</Text>
-              <Text style={styles.listText}>{item}</Text>
+              <Text style={[styles.bullet, { color: colors.primary }]}>•</Text>
+              <Text style={[styles.listText, { color: colors.textSecondary }]}>{item}</Text>
             </View>
           ))}
         </View>
       )}
 
       {program.areas.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Service Areas</Text>
-          <Text style={styles.areaText}>{program.areas.join(', ')}</Text>
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Service Areas</Text>
+          <Text style={[styles.areaText, { color: colors.textSecondary }]}>{program.areas.join(', ')}</Text>
         </View>
       )}
 
       {program.cost && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Cost</Text>
-          <Text style={styles.bodyText}>{program.cost}</Text>
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Cost</Text>
+          <Text style={[styles.bodyText, { color: colors.textSecondary }]}>{program.cost}</Text>
         </View>
       )}
 
       {program.requirements && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Requirements</Text>
-          <Text style={styles.bodyText}>{program.requirements}</Text>
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Requirements</Text>
+          <Text style={[styles.bodyText, { color: colors.textSecondary }]}>{program.requirements}</Text>
         </View>
       )}
 
       {program.howToApply && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>How to Apply</Text>
-          <Text style={styles.bodyText}>{program.howToApply}</Text>
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>How to Apply</Text>
+          <Text style={[styles.bodyText, { color: colors.textSecondary }]}>{program.howToApply}</Text>
         </View>
       )}
 
       {program.website && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Official Source</Text>
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Official Source</Text>
           <TouchableOpacity onPress={handleOpenWebsite}>
-            <Text style={styles.sourceUrl}>{program.website}</Text>
+            <Text style={[styles.sourceUrl, { color: colors.primary }]}>{program.website}</Text>
           </TouchableOpacity>
         </View>
       )}
 
       <View style={styles.actionButtons}>
         {program.website && (
-          <TouchableOpacity style={styles.primaryButton} onPress={handleOpenWebsite}>
-            <Text style={styles.primaryButtonText}>Visit Official Website</Text>
+          <TouchableOpacity style={[styles.primaryButton, { backgroundColor: colors.primary }]} onPress={handleOpenWebsite}>
+            <Text style={[styles.primaryButtonText, { color: colors.primaryText }]}>Visit Official Website</Text>
           </TouchableOpacity>
         )}
 
         <View style={styles.contactButtons}>
           {program.phone && (
-            <TouchableOpacity style={styles.secondaryButton} onPress={handleCall}>
-              <Text style={styles.secondaryButtonText}>📞 Call</Text>
+            <TouchableOpacity style={[styles.secondaryButton, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={handleCall}>
+              <Text style={[styles.secondaryButtonText, { color: colors.text }]}>📞 Call</Text>
             </TouchableOpacity>
           )}
           {program.email && (
-            <TouchableOpacity style={styles.secondaryButton} onPress={handleEmail}>
-              <Text style={styles.secondaryButtonText}>✉️ Email</Text>
+            <TouchableOpacity style={[styles.secondaryButton, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={handleEmail}>
+              <Text style={[styles.secondaryButtonText, { color: colors.text }]}>✉️ Email</Text>
             </TouchableOpacity>
           )}
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>
+        <Text style={[styles.footerText, { color: colors.textSecondary }]}>
           Last updated: {new Date(program.lastUpdated).toLocaleDateString()}
         </Text>
+      </View>
       </View>
     </ScrollView>
   );
@@ -244,7 +256,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
   },
   content: {
-    padding: 16,
+    paddingVertical: 16,
+  },
+  contentWrapper: {
+    // For tablet layouts
   },
   header: {
     flexDirection: 'row',
@@ -279,7 +294,10 @@ const styles = StyleSheet.create({
     fontSize: 28,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
   },
   sectionTitle: {
     fontSize: 18,

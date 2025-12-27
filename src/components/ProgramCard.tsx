@@ -22,6 +22,7 @@ interface ProgramCardProps {
   onPress: () => void;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
+  isTablet?: boolean;
 }
 
 const CATEGORY_ICONS: { [key: string]: string } = {
@@ -48,6 +49,7 @@ function ProgramCard({
   onPress,
   isFavorite = false,
   onToggleFavorite,
+  isTablet = false,
 }: ProgramCardProps) {
   const { colors, isDark } = useTheme();
   const categoryIcon = CATEGORY_ICONS[program.category] || '📋';
@@ -56,7 +58,12 @@ function ProgramCard({
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.cardBackground }]}
+      style={[
+        styles.card,
+        { backgroundColor: colors.cardBackground },
+        // For tablet multi-column layout, remove horizontal margin since wrapper handles it
+        isTablet && styles.cardTablet,
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
       accessibilityRole="button"
@@ -132,6 +139,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  cardTablet: {
+    marginHorizontal: 0,
+    flex: 1,
   },
   header: {
     flexDirection: 'row',

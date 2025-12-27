@@ -22,6 +22,7 @@ import ProgramCard from '../components/ProgramCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import { useTheme } from '../context/ThemeContext';
+import { useResponsive } from '../hooks/useResponsive';
 
 type BrowseScreenProps = {
   navigation: NativeStackNavigationProp<BrowseStackParamList, 'BrowseList'>;
@@ -73,6 +74,7 @@ const BROAD_AREAS = ['Bay Area', 'Bay Area-wide', 'Statewide', 'California', 'Na
 
 export default function BrowseScreen({ navigation }: BrowseScreenProps) {
   const { colors } = useTheme();
+  const { gridColumns, horizontalPadding, isTablet } = useResponsive();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [eligibilityTypes, setEligibilityTypes] = useState<Eligibility[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -525,16 +527,29 @@ export default function BrowseScreen({ navigation }: BrowseScreenProps) {
         ref={flatListRef}
         data={filteredPrograms}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <ProgramCard
-            program={item}
-            onPress={() => navigation.navigate('ProgramDetail', { programId: item.id })}
-            isFavorite={favorites.includes(item.id)}
-            onToggleFavorite={() => handleToggleFavorite(item.id)}
-          />
+        key={gridColumns} // Force re-render when columns change
+        numColumns={gridColumns}
+        renderItem={({ item, index }) => (
+          <View style={[
+            styles.cardWrapper,
+            {
+              flex: 1 / gridColumns,
+              paddingLeft: index % gridColumns === 0 ? horizontalPadding : 4,
+              paddingRight: (index % gridColumns === gridColumns - 1) ? horizontalPadding : 4,
+            }
+          ]}>
+            <ProgramCard
+              program={item}
+              onPress={() => navigation.navigate('ProgramDetail', { programId: item.id })}
+              isFavorite={favorites.includes(item.id)}
+              onToggleFavorite={() => handleToggleFavorite(item.id)}
+              isTablet={isTablet}
+            />
+          </View>
         )}
         ListHeaderComponent={renderListHeader}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingHorizontal: 0 }]}
+        columnWrapperStyle={gridColumns > 1 ? styles.columnWrapper : undefined}
         refreshing={loading}
         onRefresh={loadData}
         onScrollToIndexFailed={() => {}}
@@ -638,6 +653,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingVertical: 8,
+  },
+  cardWrapper: {
+    marginVertical: 4,
+  },
+  columnWrapper: {
+    justifyContent: 'flex-start',
   },
   emptyContainer: {
     padding: 40,

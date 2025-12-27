@@ -20,6 +20,7 @@ import APIService from '../services/api';
 import ProgramCard from '../components/ProgramCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useTheme } from '../context/ThemeContext';
+import { useResponsive } from '../hooks/useResponsive';
 
 type SearchScreenProps = {
   navigation: NativeStackNavigationProp<SearchStackParamList, 'SearchList'>;
@@ -27,6 +28,7 @@ type SearchScreenProps = {
 
 export default function SearchScreen({ navigation }: SearchScreenProps) {
   const { colors } = useTheme();
+  const { gridColumns, horizontalPadding, isTablet } = useResponsive();
   const [searchQuery, setSearchQuery] = useState('');
   const [programs, setPrograms] = useState<Program[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -218,15 +220,28 @@ export default function SearchScreen({ navigation }: SearchScreenProps) {
         <FlatList
           data={programs}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => (
-            <ProgramCard
-              program={item}
-              onPress={() => navigation.navigate('ProgramDetail', { programId: item.id })}
-              isFavorite={favorites.includes(item.id)}
-              onToggleFavorite={() => handleToggleFavorite(item.id)}
-            />
+          key={gridColumns} // Force re-render when columns change
+          numColumns={gridColumns}
+          renderItem={({ item, index }) => (
+            <View style={[
+              styles.cardWrapper,
+              {
+                flex: 1 / gridColumns,
+                paddingLeft: index % gridColumns === 0 ? horizontalPadding : 4,
+                paddingRight: (index % gridColumns === gridColumns - 1) ? horizontalPadding : 4,
+              }
+            ]}>
+              <ProgramCard
+                program={item}
+                onPress={() => navigation.navigate('ProgramDetail', { programId: item.id })}
+                isFavorite={favorites.includes(item.id)}
+                onToggleFavorite={() => handleToggleFavorite(item.id)}
+                isTablet={isTablet}
+              />
+            </View>
           )}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingHorizontal: 0 }]}
+          columnWrapperStyle={gridColumns > 1 ? styles.columnWrapper : undefined}
           refreshing={loading}
           onRefresh={handleSearch}
           ListEmptyComponent={
@@ -290,6 +305,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingVertical: 8,
+  },
+  cardWrapper: {
+    marginVertical: 4,
+  },
+  columnWrapper: {
+    justifyContent: 'flex-start',
   },
   emptyStateContainer: {
     flex: 1,

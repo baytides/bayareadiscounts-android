@@ -17,9 +17,11 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../context/ThemeContext';
+import { useResponsive } from '../hooks/useResponsive';
 
 export default function AccessibilityScreen() {
   const { colors } = useTheme();
+  const { maxContentWidth, horizontalPadding, isTablet, width } = useResponsive();
   const [reduceMotionEnabled, setReduceMotionEnabled] = useState<boolean>(false);
   const [screenReaderEnabled, setScreenReaderEnabled] = useState<boolean>(false);
 
@@ -70,9 +72,13 @@ export default function AccessibilityScreen() {
     }
   };
 
+  // Calculate centered content padding for tablets
+  const contentPadding = isTablet ? Math.max((width - maxContentWidth) / 2, horizontalPadding) : 0;
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: contentPadding }}>
+        <View style={[styles.contentWrapper, isTablet && { maxWidth: maxContentWidth, alignSelf: 'center', width: '100%' }]}>
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Status</Text>
           <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
@@ -177,6 +183,7 @@ export default function AccessibilityScreen() {
             To enable or disable accessibility features, open your device's Settings app and navigate to Accessibility.
           </Text>
         </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -185,6 +192,9 @@ export default function AccessibilityScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  contentWrapper: {
+    // For tablet layouts
   },
   section: {
     marginTop: 24,

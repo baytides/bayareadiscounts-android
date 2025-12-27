@@ -3,9 +3,12 @@ import { StatusBar } from 'expo-status-bar';
 import * as Sentry from '@sentry/react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
-import { initializeSentry, loadCrashReportingPreference } from './src/utils/crashReporting';
+import { initializeSentry, loadCrashReportingPreference, disableSentry } from './src/utils/crashReporting';
 import { checkForUpdates } from './src/utils/updateChecker';
 import appConfig from './app.json';
+
+// Initialize Sentry synchronously before Sentry.wrap()
+initializeSentry(appConfig.expo.version, appConfig.expo.android.versionCode);
 
 function AppContent() {
   const { isDark } = useTheme();
@@ -22,12 +25,10 @@ function App() {
 
   useEffect(() => {
     async function init() {
+      // Check if user has disabled crash reporting
       const crashReportingEnabled = await loadCrashReportingPreference();
-      if (crashReportingEnabled) {
-        initializeSentry(
-          appConfig.expo.version,
-          appConfig.expo.android.versionCode
-        );
+      if (!crashReportingEnabled) {
+        disableSentry();
       }
       setReady(true);
 

@@ -20,6 +20,7 @@ import * as Haptics from 'expo-haptics';
 import APIService from '../services/api';
 import appConfig from '../../app.json';
 import { useTheme } from '../context/ThemeContext';
+import { useResponsive } from '../hooks/useResponsive';
 import {
   loadCrashReportingPreference,
   setCrashReportingEnabled,
@@ -44,6 +45,7 @@ type NavigationProp = NativeStackNavigationProp<SettingsStackParamList>;
 export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { colors, mode, setMode, isDark } = useTheme();
+  const { maxContentWidth, horizontalPadding, isTablet, width } = useResponsive();
   const [cacheSize, setCacheSize] = useState<string>('Calculating...');
   const [metadata, setMetadata] = useState<any>(null);
   const [crashReportingEnabled, setCrashReporting] = useState<boolean>(true);
@@ -342,9 +344,13 @@ export default function SettingsScreen() {
     }
   };
 
+  // Calculate centered content padding for tablets
+  const contentPadding = isTablet ? Math.max((width - maxContentWidth) / 2, horizontalPadding) : 0;
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingHorizontal: contentPadding }]}>
+        <View style={[styles.contentWrapper, isTablet && { maxWidth: maxContentWidth, alignSelf: 'center', width: '100%' }]}>
         {/* Logo Banner */}
         <View style={[styles.logoContainer, { backgroundColor: colors.surface }]}>
           <Image
@@ -627,6 +633,7 @@ export default function SettingsScreen() {
             Connecting residents to public benefits and community resources
           </Text>
         </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -635,6 +642,12 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    // Responsive padding applied inline
+  },
+  contentWrapper: {
+    // For tablet layouts, max-width applied inline
   },
   logoContainer: {
     alignItems: 'center',

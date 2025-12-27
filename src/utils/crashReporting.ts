@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const CRASH_REPORTING_KEY = '@crash_reporting_enabled';
 
 // Initialize Sentry with privacy-friendly settings
+// Must be called synchronously before Sentry.wrap()
 export function initializeSentry(version: string, versionCode: number) {
   Sentry.init({
     dsn: 'https://a901563a7a20408ba654c1012592ac34@o4510598177095680.ingest.us.sentry.io/4510598243745792',
@@ -40,6 +41,22 @@ export function initializeSentry(version: string, versionCode: number) {
   });
 }
 
+// Disable Sentry at runtime (for user preference toggle)
+export function disableSentry() {
+  const client = Sentry.getClient();
+  if (client) {
+    client.getOptions().enabled = false;
+  }
+}
+
+// Enable Sentry at runtime (for user preference toggle)
+export function enableSentry() {
+  const client = Sentry.getClient();
+  if (client) {
+    client.getOptions().enabled = !__DEV__;
+  }
+}
+
 // Load crash reporting preference from storage
 export async function loadCrashReportingPreference(): Promise<boolean> {
   try {
@@ -51,10 +68,15 @@ export async function loadCrashReportingPreference(): Promise<boolean> {
   }
 }
 
-// Save crash reporting preference
+// Save crash reporting preference and update Sentry state
 export async function setCrashReportingEnabled(enabled: boolean): Promise<void> {
   try {
     await AsyncStorage.setItem(CRASH_REPORTING_KEY, enabled.toString());
+    if (enabled) {
+      enableSentry();
+    } else {
+      disableSentry();
+    }
   } catch {
     // Ignore storage errors
   }
