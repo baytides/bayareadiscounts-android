@@ -26,18 +26,19 @@ export default function AccessibilityScreen() {
   const [screenReaderEnabled, setScreenReaderEnabled] = useState<boolean>(false);
 
   useEffect(() => {
-    checkAccessibilitySettings();
-  }, []);
+    // Check initial accessibility settings
+    const checkInitialSettings = async () => {
+      try {
+        const reduceMotion = await AccessibilityInfo.isReduceMotionEnabled();
+        const screenReader = await AccessibilityInfo.isScreenReaderEnabled();
+        setReduceMotionEnabled(reduceMotion);
+        setScreenReaderEnabled(screenReader);
+      } catch (err) {
+        console.error('Error checking accessibility settings:', err);
+      }
+    };
 
-  const checkAccessibilitySettings = async () => {
-    try {
-      const reduceMotion = await AccessibilityInfo.isReduceMotionEnabled();
-      const screenReader = await AccessibilityInfo.isScreenReaderEnabled();
-      setReduceMotionEnabled(reduceMotion);
-      setScreenReaderEnabled(screenReader);
-    } catch (err) {
-      console.error('Error checking accessibility settings:', err);
-    }
+    checkInitialSettings();
 
     // Listen for changes
     const reduceMotionSubscription = AccessibilityInfo.addEventListener(
@@ -49,11 +50,12 @@ export default function AccessibilityScreen() {
       (enabled) => setScreenReaderEnabled(enabled)
     );
 
+    // Cleanup subscriptions on unmount
     return () => {
       reduceMotionSubscription?.remove();
       screenReaderSubscription?.remove();
     };
-  };
+  }, []);
 
   const handleOpenAccessibilitySettings = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

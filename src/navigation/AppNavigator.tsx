@@ -39,6 +39,11 @@ export type SettingsStackParamList = {
   Accessibility: undefined;
 };
 
+export type FavoritesStackParamList = {
+  FavoritesList: undefined;
+  ProgramDetail: { programId: string };
+};
+
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const BrowseStack = createNativeStackNavigator<BrowseStackParamList>();
 const SearchStack = createNativeStackNavigator<SearchStackParamList>();
