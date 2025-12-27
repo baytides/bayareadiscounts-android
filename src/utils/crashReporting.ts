@@ -1,71 +1,61 @@
 /**
- * Crash Reporting Preferences
- * Manages user opt-in/opt-out for crash reporting via Sentry
+ * Crash Reporting Utility
+ * Privacy-friendly Sentry configuration for error tracking
  */
 
+import * as Sentry from '@sentry/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Sentry from '@sentry/react';
-import appConfig from '../../app.json';
 
-const CRASH_REPORTING_KEY = '@bay_area_discounts:crash_reporting_enabled';
+const CRASH_REPORTING_KEY = '@crash_reporting_enabled';
 
-// Default to enabled
-let crashReportingEnabled = true;
+// Initialize Sentry with privacy-friendly settings
+export function initializeSentry(version: string, versionCode: number) {
+  Sentry.init({
+    dsn: 'https://a901563a7a20408ba654c1012592ac34@o4510598177095680.ingest.us.sentry.io/4510598243745792',
+    // Disable in development
+    enabled: !__DEV__,
+    // Release tracking
+    release: `org.baytides.bayareadiscounts@${version}+${versionCode}`,
+    environment: __DEV__ ? 'development' : 'production',
+    // Privacy settings - disable performance tracing
+    tracesSampleRate: 0,
+    // Don't send default PII
+    sendDefaultPii: false,
+    // Disable session tracking for privacy
+    enableAutoSessionTracking: false,
+    // Strip PII from crash reports
+    beforeSend(event) {
+      // Remove user IP address
+      if (event.user) {
+        delete event.user.ip_address;
+        delete event.user.email;
+        delete event.user.username;
+      }
+      // Remove device identifiers
+      if (event.contexts?.device) {
+        delete event.contexts.device.device_id;
+      }
+      return event;
+    },
+  });
+}
 
-/**
- * Load the crash reporting preference from storage
- */
+// Load crash reporting preference from storage
 export async function loadCrashReportingPreference(): Promise<boolean> {
   try {
     const value = await AsyncStorage.getItem(CRASH_REPORTING_KEY);
     // Default to true if not set
-    crashReportingEnabled = value === null ? true : value === 'true';
-    return crashReportingEnabled;
-  } catch (error) {
-    console.error('Failed to load crash reporting preference:', error);
+    return value === null ? true : value === 'true';
+  } catch {
     return true;
   }
 }
 
-/**
- * Set the crash reporting preference
- */
+// Save crash reporting preference
 export async function setCrashReportingEnabled(enabled: boolean): Promise<void> {
   try {
-    crashReportingEnabled = enabled;
-    await AsyncStorage.setItem(CRASH_REPORTING_KEY, enabled ? 'true' : 'false');
-
-    // Update Sentry client
-    if (enabled) {
-      Sentry.init({
-        dsn: 'https://a901563a7a20408ba654c1012592ac34@o4510598177095680.ingest.us.sentry.io/4510598243745792',
-        enabled: !__DEV__,
-        release: `org.baytides.bayareadiscounts@${appConfig.expo.version}+${appConfig.expo.android.versionCode}`,
-        environment: __DEV__ ? 'development' : 'production',
-        tracesSampleRate: 0,
-        sendDefaultPii: false,
-        beforeSend(event) {
-          if (event.user) {
-            delete event.user.ip_address;
-          }
-          if (event.contexts?.device) {
-            delete event.contexts.device.device_id;
-          }
-          return event;
-        },
-      });
-    } else {
-      // Disable Sentry by closing the client
-      Sentry.close();
-    }
-  } catch (error) {
-    console.error('Failed to save crash reporting preference:', error);
+    await AsyncStorage.setItem(CRASH_REPORTING_KEY, enabled.toString());
+  } catch {
+    // Ignore storage errors
   }
-}
-
-/**
- * Check if crash reporting is currently enabled
- */
-export function isCrashReportingEnabled(): boolean {
-  return crashReportingEnabled;
 }
