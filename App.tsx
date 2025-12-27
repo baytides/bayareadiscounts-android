@@ -5,6 +5,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { initializeSentry, loadCrashReportingPreference, disableSentry } from './src/utils/crashReporting';
 import { checkForUpdates } from './src/utils/updateChecker';
+import { initializeIntegrity } from './src/utils/appIntegrity';
 import appConfig from './app.json';
 
 // Initialize Sentry synchronously before Sentry.wrap()
@@ -37,6 +38,11 @@ function App() {
       setTimeout(() => {
         checkForUpdates();
       }, 2000);
+
+      // Initialize Play Integrity in background (non-blocking)
+      initializeIntegrity().catch(() => {
+        // Silently fail - integrity is optional
+      });
     }
     init();
   }, []);
