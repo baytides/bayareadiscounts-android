@@ -34,8 +34,7 @@
       }
     },
     "plugins": [
-      "expo-font",
-      "@expo/app-integrity"
+      "expo-font"
     ]
   }
 }
