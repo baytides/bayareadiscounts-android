@@ -17,7 +17,7 @@
     },
     "android": {
       "package": "org.baytides.bayareadiscounts",
-      "versionCode": 5,
+      "versionCode": 30,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/favicons/adaptive-icon-foreground.png",
         "backgroundColor": "#ffffff"
