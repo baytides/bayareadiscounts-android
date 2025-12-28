@@ -1,6 +1,6 @@
 {
   "name": "bayareadiscounts-android",
-  "version": "1.0.4.2",
+  "version": "1.0.4.3",
   "main": "index.ts",
   "scripts": {
     "start": "expo start --android",
